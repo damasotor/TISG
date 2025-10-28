@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html">
+<h:head>
+    <title>Mapa de Transporte</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@7.4.0/ol.css"/>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #0066cc;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        #controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 60px);
+        }
+
+        /* --- Popup estilo --- */
+        #popup {
+            background: white;
+            border-radius: 8px;
+            padding: 6px 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            min-width: 120px;
+            display: none;
+            border: 1px solid #ddd;
+        }
+
+        .popup-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .popup-icon {
+            font-size: 18px;
+        }
+        #modo-banner {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            z-index: 1000;
+            font-size: 14px;
+        }
+    </style>
+</h:head>
+
+<h:body>
+
+    <header>
+        <h1>🚍 Sistema de Transporte</h1>
+        <div id="controls">
+            <button onclick="activarAltaParada()">Agregar Parada</button>
+            <button onclick="activarAltaLinea()">Agregar Línea</button>
+            <button onclick="cancelarDibujo()">Cancelar Dibujo</button>
+            <button onclick="activarRuteo()">Calcular Ruta</button> <button onclick="cancelarDibujo()">Cancelar Dibujo</button>
+        </div>
+    </header>
+
+    <div id="modo-banner">Modo: Libre</div> <!-- 🔹 Nuevo indicador -->
+
+    <div id="map"></div>
+
+    <!-- Popup para mostrar info de paradas -->
+    <div id="popup">
+        <div id="popup-content"></div>
+    </div>
+
+    <!-- OpenLayers -->
+    <script src="https://cdn.jsdelivr.net/npm/proj4@2.9.2/dist/proj4.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@7.4.0/dist/ol.js"></script>
+
+    <!-- Scripts separados -->
+    <script src="resources/js/mapa.js"></script>
+    <script src="resources/js/paradas.js"></script>
+    <script src="resources/js/lineas.js"></script>
+
+</h:body>
+</html>

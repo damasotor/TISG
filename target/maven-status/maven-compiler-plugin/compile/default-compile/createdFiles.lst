@@ -1,0 +1,15 @@
+uy/transporte/json/GeometryAdapter.class
+uy/transporte/rest/LineaResource.class
+uy/transporte/dto/ParadaDTO.class
+uy/transporte/repository/LineaRepository.class
+uy/transporte/entity/Linea.class
+uy/transporte/rest/JerseyConfig.class
+uy/transporte/entity/RutaSegmento.class
+uy/transporte/dto/RutaRequestDTO.class
+uy/transporte/repository/ParadaRepository.class
+uy/transporte/dto/LineaDTO.class
+uy/transporte/repository/RutaRepository.class
+uy/transporte/entity/Parada.class
+uy/transporte/dto/RutaDTO.class
+uy/transporte/rest/RutaResource.class
+uy/transporte/rest/ParadaResource.class

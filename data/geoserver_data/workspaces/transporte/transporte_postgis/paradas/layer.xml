@@ -1,0 +1,16 @@
+<layer>
+  <name>paradas</name>
+  <id>LayerInfoImpl--4890128a:199da63482d:-7ff1</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl--4890128a:199da63482d:-8000</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl--4890128a:199da63482d:-7ff2</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-10-12 21:47:31.394 UTC</dateCreated>
+</layer>

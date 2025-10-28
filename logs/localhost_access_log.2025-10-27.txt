@@ -1,0 +1,15 @@
+172.18.0.1 - - [27/Oct/2025:00:47:01 -0300] "GET /transporte/ HTTP/1.1" 200 3154
+172.18.0.1 - - [27/Oct/2025:00:47:01 -0300] "GET /transporte/resources/js/mapa.js HTTP/1.1" 200 2424
+172.18.0.1 - - [27/Oct/2025:00:47:01 -0300] "GET /transporte/resources/js/paradas.js HTTP/1.1" 200 7606
+172.18.0.1 - - [27/Oct/2025:00:47:01 -0300] "GET /transporte/resources/js/lineas.js HTTP/1.1" 200 3907
+172.18.0.1 - - [27/Oct/2025:00:47:05 -0300] "GET /favicon.ico HTTP/1.1" 404 611
+172.18.0.1 - - [27/Oct/2025:00:47:07 -0300] "GET /transporte/api/lineas HTTP/1.1" 500 40450
+172.18.0.1 - - [27/Oct/2025:00:59:58 -0300] "POST /transporte/api/lineas HTTP/1.1" 500 14549
+172.18.0.1 - - [27/Oct/2025:01:00:34 -0300] "POST /transporte/api/ruta HTTP/1.1" 500 31168
+172.18.0.1 - - [27/Oct/2025:01:02:08 -0300] "POST /transporte/api/lineas HTTP/1.1" 500 14549
+172.18.0.1 - - [27/Oct/2025:01:27:57 -0300] "GET /transporte HTTP/1.1" 302 -
+172.18.0.1 - - [27/Oct/2025:01:27:57 -0300] "GET /transporte/ HTTP/1.1" 304 -
+172.18.0.1 - - [27/Oct/2025:01:27:58 -0300] "GET /transporte/resources/js/mapa.js HTTP/1.1" 304 -
+172.18.0.1 - - [27/Oct/2025:01:27:58 -0300] "GET /transporte/resources/js/paradas.js HTTP/1.1" 304 -
+172.18.0.1 - - [27/Oct/2025:01:28:00 -0300] "GET /transporte/api/lineas HTTP/1.1" 500 40450
+172.18.0.1 - - [27/Oct/2025:01:28:57 -0300] "POST /transporte/api/lineas HTTP/1.1" 500 14549

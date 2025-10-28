@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  postgis:
+    image: kartoza/postgis:15-3.4
+    container_name: postgis_transporte
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: transporte
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./data:/csv_data
+      - ./initdb:/docker-entrypoint-initdb.d
+      - ./postgis_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    command: ["postgres", "-c", "listen_addresses='*'"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d transporte -h localhost"]
+      interval: 5s
+      retries: 30        # más tiempo para inicialización
+      start_period: 10s
+
+  transporte-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_transporte_jakarta
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+  geoserver:
+    image: kartoza/geoserver:2.24.0
+    container_name: geoserver_transporte
+    restart: always
+    environment:
+      GEOSERVER_ADMIN_PASSWORD: admin
+      GEOSERVER_ADMIN_USER: admin
+      PG_DB: transporte
+      PG_HOST: postgis
+      PG_PORT: 5432
+      PG_USER: admin
+      PG_PASS: admin
+      GS_WORKSPACE: transporte
+      GS_DATASTORE: transporte_postgis
+      GS_PUBLISH_LAYERS: paradas
+      GS_PARADAS_NAME: v_uptu_paradas
+      GS_VIAS_NAME: v_sig_vias
+    volumes:
+      - ./data/geoserver_data:/opt/geoserver/data_dir
+    ports:
+      - "8088:8080"
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+volumes:
+  postgis_data:
+

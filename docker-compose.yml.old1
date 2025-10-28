@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # --------------------------------------------------------------------------------
+  # 1. Servicio de Base de Datos PostGIS
+  # --------------------------------------------------------------------------------
+  postgis:
+    image: kartoza/postgis:15-3.3
+    container_name: postgis_transporte
+    # ✅ RESTAURADO: Política de reinicio automática (necesaria para producción)
+    restart: always 
+    environment:
+      # Credenciales usadas por la aplicación Java EE y GeoServer (ver persistence.xml)
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: transporte
+    volumes:
+      # Datos persistentes de la DB
+      - ./data/postgis:/var/lib/postgresql/data
+      # Scripts de inicialización de la DB (creación de tablas, datos iniciales, etc.)
+      - ./initdb:/docker-entrypoint-initdb.d
+      
+      # ✅ CORRECCIÓN CLAVE: Mapea la carpeta local 'data' (que contiene los CSV) 
+      # a la carpeta temporal '/tmp' del contenedor, como lo requiere el script SQL.
+      - ./data:/tmp 
+      
+    ports:
+      # CRÍTICO: Mapeo de puerto 5433:5432
+      - "5433:5432"
+
+  # --------------------------------------------------------------------------------
+  # 2. Servicio de Aplicación Java EE (API REST)
+  # --------------------------------------------------------------------------------
+  transporte-app:
+    # Construye la imagen usando el Dockerfile en el directorio actual
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_transporte_jakarta
+    restart: always
+    # CRÍTICO: Esperar a que la base de datos esté lista
+    depends_on:
+      - postgis
+    ports:
+      # Mapea el puerto 8080 del contenedor (Tomcat) al puerto 9080 del host
+      - "9080:8080"
+    environment:
+      # Conexión a 'postgis:5432' (nombre de servicio + puerto interno)
+      JAVA_OPTS: "-Djdbc.url=jdbc:postgresql://postgis:5432/transporte -Djdbc.user=admin -Djdbc.password=admin"
+
+  # --------------------------------------------------------------------------------
+  # 3. Servicio de Servidor de Mapas GeoServer
+  # --------------------------------------------------------------------------------
+  geoserver:
+    image: kartoza/geoserver:2.27.2
+    container_name: geoserver_transporte
+    restart: always
+    # CRÍTICO: Esperar a que la base de datos esté lista
+    depends_on:
+      - postgis
+    environment:
+      GEOSERVER_ADMIN_USER: admin
+      GEOSERVER_ADMIN_PASSWORD: geoserver
+    volumes:
+      - ./data/geoserver_data:/opt/geoserver/data_dir
+    ports:
+      # Mapea el puerto 8080 del contenedor (GeoServer) al puerto 8081 del host
+      - "8081:8080"
+

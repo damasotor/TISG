@@ -1,0 +1,15 @@
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/repository/LineaRepository.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/entity/RutaSegmento.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/entity/Parada.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/rest/RutaResource.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/dto/RutaRequestDTO.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/rest/ParadaResource.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/repository/RutaRepository.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/rest/LineaResource.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/entity/Linea.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/dto/LineaDTO.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/repository/ParadaRepository.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/dto/RutaDTO.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/rest/JerseyConfig.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/json/GeometryAdapter.java
+/home/damaso/Documentos/TSIG/transporte-master/src/main/java/uy/transporte/dto/ParadaDTO.java

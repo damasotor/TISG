@@ -1,0 +1,109 @@
+-- ===========================================
+-- Limpieza (borrar si existen)
+-- ===========================================
+DROP TABLE IF EXISTS public."v_sig_vias.shp" CASCADE;
+DROP TABLE IF EXISTS public.v_uptu_paradas CASCADE;
+DROP TABLE IF EXISTS public.rutas_resultado CASCADE;
+
+-- ===========================================
+-- 1. CARGA Y CONVERSION DE VÍAS ("v_sig_vias.shp")
+-- Sin cambios, ya logramos el COPY 33324 y el INSERT ignora el error de texto.
+-- ===========================================
+
+-- 1a. Tabla temporal definida para 8 columnas
+CREATE TABLE temp_vias_raw (
+    col1 VARCHAR, col2 VARCHAR, col3 VARCHAR, col4 VARCHAR, col5 VARCHAR,
+    col6 VARCHAR, col7 VARCHAR, col8 VARCHAR
+);
+
+-- Copiar los datos del CSV. Usamos HEADER true para ignorar la primera fila.
+\COPY temp_vias_raw FROM '/tmp/v_sig_vias.csv' WITH (FORMAT csv, DELIMITER ',', HEADER true, NULL '', ENCODING 'UTF8');
+
+-- 1b. Crear la tabla final de PostGIS
+CREATE TABLE public."v_sig_vias.shp" (
+    "GID" INTEGER PRIMARY KEY,
+    geom geometry(MultiLineString, 4326),
+    source INTEGER,
+    target INTEGER,
+    cost NUMERIC,
+    longitud NUMERIC
+);
+
+-- 1c. Insertar y convertir. Filtramos cualquier línea cuyo col1 no sea un número (resolviendo "JUAN PARRA DEL RIEGO").
+INSERT INTO public."v_sig_vias.shp" ("GID", geom, source, target, cost, longitud)
+SELECT
+    col1::INTEGER AS "GID",
+    ST_GeomFromEWKB(DECODE(col2, 'hex')),
+    col3::INTEGER AS source,
+    col4::INTEGER AS target,
+    col5::NUMERIC AS cost,
+    col6::NUMERIC AS longitud
+FROM temp_vias_raw
+WHERE col1 ~ '^\d+$'; 
+
+-- Limpieza
+DROP TABLE temp_vias_raw;
+
+-- Creación de índices necesarios para pgRouting
+CREATE INDEX idx_vias_geom ON public."v_sig_vias.shp" USING gist(geom);
+CREATE INDEX idx_vias_source ON public."v_sig_vias.shp" (source);
+CREATE INDEX idx_vias_target ON public."v_sig_vias.shp" (target);
+
+
+-- ===========================================
+-- 2. CARGA Y CONVERSION DE PARADAS (v_uptu_paradas)
+-- ESTRATEGIA: Carga la línea completa en una columna y luego divide para ignorar errores.
+-- Esto resuelve el error de la línea 387.
+-- ===========================================
+
+-- 2a. Tabla temporal con UNA SOLA COLUMNA para cargar la línea completa
+CREATE TABLE temp_paradas_linea_completa (
+    linea_completa TEXT
+);
+
+-- Copiar la línea completa. Usamos HEADER false (porque no podemos saber si el encabezado tiene comas).
+\COPY temp_paradas_linea_completa FROM '/tmp/v_uptu_paradas.csv' WITH (FORMAT csv, DELIMITER E'\t', QUOTE E'\b', HEADER false, ENCODING 'UTF8');
+
+-- La primera línea copiada es el encabezado, lo borramos.
+DELETE FROM temp_paradas_linea_completa WHERE linea_completa LIKE 'COD_UBIC_P%';
+
+-- 2b. Crear la tabla final de PostGIS
+CREATE TABLE public.v_uptu_paradas (
+    "COD_UBIC_P" INTEGER PRIMARY KEY,
+    geometria geometry(Point, 4326),
+    "cod_calle" INTEGER,
+    "nom_calle" VARCHAR(255)
+);
+
+-- 2c. Insertar y convertir. Usamos string_to_array para dividir la línea.
+-- Usamos CASE WHEN y filtros para asegurarnos de que solo insertamos datos válidos.
+INSERT INTO public.v_uptu_paradas ("COD_UBIC_P", geometria, "cod_calle", "nom_calle")
+SELECT
+    (parts[1])::INTEGER AS "COD_UBIC_P",
+    ST_GeomFromEWKB(DECODE(parts[2], 'hex')),
+    NULLIF(parts[3], '')::INTEGER AS "cod_calle",
+    parts[7]::VARCHAR AS "nom_calle"
+FROM (
+    SELECT string_to_array(linea_completa, ',') AS parts
+    FROM temp_paradas_linea_completa
+) AS T
+WHERE 
+    ARRAY_LENGTH(parts, 1) >= 7 -- Nos aseguramos de que haya al menos 7 columnas para evitar el error de la línea 387
+    AND parts[1] ~ '^\d+$'      -- Nos aseguramos de que el GID sea un número
+ON CONFLICT ("COD_UBIC_P") DO NOTHING; -- Ignoramos duplicados si hay
+
+-- Limpieza
+DROP TABLE temp_paradas_linea_completa;
+
+-- Creación de índices espaciales
+CREATE INDEX IF NOT EXISTS idx_paradas_geom ON public.v_uptu_paradas USING gist(geometria);
+
+-- Tabla de resultados (asegurar existencia)
+CREATE TABLE IF NOT EXISTS public.rutas_resultado (
+    id SERIAL PRIMARY KEY,
+    start_stop_cod INTEGER,
+    end_stop_cod INTEGER,
+    route_geom geometry(LineString, 4326),
+    created_at TIMESTAMP DEFAULT now()
+);
+

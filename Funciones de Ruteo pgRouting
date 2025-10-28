@@ -1,0 +1,113 @@
+-- ===========================================
+-- Extensiones necesarias
+-- ===========================================
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pgrouting;
+
+-- ===========================================
+-- TABLA DE RESULTADOS DE RUTAS
+-- ===========================================
+CREATE TABLE IF NOT EXISTS public.rutas_resultado (
+    id SERIAL PRIMARY KEY,
+    start_stop_cod INTEGER,
+    end_stop_cod INTEGER,
+    route_geom geometry(LineString, 4326),
+    created_at TIMESTAMP DEFAULT now()
+);
+
+-- ===========================================
+-- FUNCION AUXILIAR: encontrar nodo más cercano
+-- ===========================================
+CREATE OR REPLACE FUNCTION find_nearest_node(
+    x DOUBLE PRECISION,
+    y DOUBLE PRECISION
+)
+RETURNS INTEGER AS $$
+DECLARE
+    nearest_node INTEGER;
+BEGIN
+    SELECT source
+    INTO nearest_node
+    FROM public."v_sig_vias.shp"
+    ORDER BY ST_Distance(
+        geom,
+        ST_SetSRID(ST_MakePoint(x, y), 4326)
+    )
+    LIMIT 1;
+
+    RETURN nearest_node;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===========================================
+-- FUNCION PRINCIPAL: trazar y guardar ruta
+-- ===========================================
+CREATE OR REPLACE FUNCTION trace_route_between_stops(
+    start_stop_cod INTEGER,
+    end_stop_cod INTEGER
+)
+RETURNS TABLE (
+    route_id INTEGER,
+    geom_out geometry
+) AS $$
+DECLARE
+    start_geom geometry;
+    end_geom geometry;
+    start_node INTEGER;
+    end_node INTEGER;
+    route_geom geometry;
+BEGIN
+    -- 1. Obtener geometría de paradas
+    SELECT geometria INTO start_geom FROM public.v_uptu_paradas WHERE "COD_UBIC_P"::integer = start_stop_cod::integer;
+    SELECT geometria INTO end_geom FROM public.v_uptu_paradas WHERE "COD_UBIC_P"::integer = end_stop_cod::integer;
+
+    IF start_geom IS NULL OR end_geom IS NULL THEN
+        RAISE EXCEPTION 'Una de las paradas con código % o % no fue encontrada.', start_stop_cod, end_stop_cod;
+    END IF;
+
+    -- 2. Encontrar nodos de la red más cercanos a las paradas
+    SELECT find_nearest_node(ST_X(start_geom), ST_Y(start_geom)) INTO start_node;
+    SELECT find_nearest_node(ST_X(end_geom), ST_Y(end_geom)) INTO end_node;
+
+    IF start_node IS NULL OR end_node IS NULL THEN
+        RAISE EXCEPTION 'No se pudieron encontrar nodos de inicio o fin en la red vial.';
+    END IF;
+
+    -- 3. Calcular la ruta con pgRouting (Dijkstra) y obtener la geometría unificada
+    SELECT ST_LineMerge(ST_Union(v.geom))
+    INTO route_geom
+    FROM pgr_dijkstra(
+            'SELECT "GID" AS id,
+                    source,
+                    target,
+                    ST_Length(geom::geography) AS cost
+             FROM public."v_sig_vias.shp"',
+            start_node,
+            end_node,
+            directed := false
+        ) AS route
+    JOIN
+        public."v_sig_vias.shp" v
+        ON route.edge = v."GID";
+
+    IF route_geom IS NOT NULL THEN
+        -- 4. Guardar resultado en la tabla y retornar
+        INSERT INTO public.rutas_resultado (start_stop_cod, end_stop_cod, route_geom)
+        VALUES (start_stop_cod, end_stop_cod, route_geom)
+        RETURNING id, route_geom INTO route_id, geom_out;
+        
+        RETURN NEXT;
+    ELSE
+        RAISE NOTICE 'No se encontró ruta entre los nodos % y %.', start_node, end_node;
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;
+
+-- Ejecutar la función para probar la ruta
+SELECT (r.route_id, r.geom_out) FROM trace_route_between_stops(4006, 3182) r;
+
+-- Comprobar si las tablas existen y tienen filas
+SELECT EXISTS (SELECT 1 FROM public.v_uptu_paradas) AS paradas_cargadas,
+       EXISTS (SELECT 1 FROM public."v_sig_vias.shp") AS vias_cargadas;
+

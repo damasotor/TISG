@@ -1,0 +1,1019 @@
+===== ./main/java/uy/transporte/entity/Linea.java =====
+package uy.transporte.entity;
+
+import jakarta.persistence.*;
+import org.locationtech.jts.geom.LineString;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
+import uy.transporte.json.GeometryAdapter;
+
+@Entity
+@Table(name = "lineas")
+public class Linea {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String codigo;
+    private String origen;
+    private String destino;
+    private String empresa;
+
+    @JsonbTypeAdapter(GeometryAdapter.class)
+    @Column(columnDefinition = "geometry(LineString,32721)")
+    private LineString geom;
+
+    public Linea() {}
+
+    // Getters, setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getOrigen() {
+        return origen;
+    }
+
+    public void setOrigen(String origen) {
+        this.origen = origen;
+    }
+
+    public String getDestino() {
+        return destino;
+    }
+
+    public void setDestino(String destino) {
+        this.destino = destino;
+    }
+
+    public String getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
+    }
+
+    public LineString getGeom() {
+        return geom;
+    }
+
+    public void setGeom(LineString geom) {
+        this.geom = geom;
+    }
+}===== ./main/java/uy/transporte/entity/Parada.java =====
+package uy.transporte.entity;
+
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
+import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
+import uy.transporte.json.GeometryAdapter;
+
+@Entity
+@Table(name = "paradas")
+public class Parada {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String nombre;
+    private Double lat;
+    private Double lon;
+
+
+    @JsonbTypeAdapter(GeometryAdapter.class)
+    @Column(columnDefinition = "geometry(Point,4326)")
+    @JdbcTypeCode(SqlTypes.GEOMETRY)
+    private Point geom;
+
+    public void generarGeometry() {
+        GeometryFactory gf = new GeometryFactory(new PrecisionModel(), 4326);
+        this.geom = gf.createPoint(new Coordinate(this.lon, this.lat));
+    }
+
+    public Parada() {}
+
+    // Getters y Setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Double getLat() {
+        return lat;
+    }
+
+    public void setLat(Double lat) {
+        this.lat = lat;
+    }
+
+    public Double getLon() {
+        return lon;
+    }
+
+    public void setLon(Double lon) {
+        this.lon = lon;
+    }
+
+    public Point getGeometry() {
+        return geom;
+    }
+
+    public void setGeometry(Point geometry) {
+        this.geom = geometry;
+    }
+}
+===== ./main/java/uy/transporte/repository/LineaRepository.java =====
+package uy.transporte.repository;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import uy.transporte.entity.Linea;
+
+import java.util.List;
+
+@ApplicationScoped
+public class LineaRepository {
+
+    private static final EntityManagerFactory emf =
+            Persistence.createEntityManagerFactory("MiPersistencia");
+
+    public List<Linea> findAll() {
+        EntityManager em = emf.createEntityManager();
+        return em.createQuery("SELECT l FROM Linea l", Linea.class).getResultList();
+    }
+
+    public void crear(Linea linea) {
+        EntityManager em = emf.createEntityManager();
+        try{
+            em.getTransaction().begin();
+            em.persist(linea);
+            em.getTransaction().commit();
+            System.out.println("Linea creada: " + linea.getCodigo());
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            System.err.println("Error al crear Linea: " + e.getMessage());
+            throw new RuntimeException(e);
+        } finally {
+            em.close();
+        }
+    }
+}
+===== ./main/java/uy/transporte/repository/ParadaRepository.java =====
+package uy.transporte.repository;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import uy.transporte.entity.Linea;
+import uy.transporte.entity.Parada;
+
+import java.util.List;
+
+@ApplicationScoped
+public class ParadaRepository {
+
+    private static final EntityManagerFactory emf =
+            Persistence.createEntityManagerFactory("MiPersistencia");
+
+    public void crear(Parada p) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            p.generarGeometry(); // crea el POINT
+            em.getTransaction().begin();
+            em.persist(p);
+            em.getTransaction().commit();
+            System.out.println("Parada creada: " + p.getNombre());
+            //asociarLineasCercanas(p);
+            System.out.println("Parada Asociada a Linea: ");
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            System.err.println("Error al crear parada: " + e.getMessage());
+            throw new RuntimeException(e);
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Linea> findLineasByProximidad(Long idParada) {
+        EntityManager em = emf.createEntityManager();
+
+        double distancia = 10.0;
+
+        return em.createNativeQuery("""
+            SELECT l.*
+            FROM lineas l
+            JOIN paradas p ON p.id = :id
+            WHERE ST_DWithin(
+                l.geom,
+                ST_Transform(p.geom, 32721),
+                :dist
+            )
+        """, Linea.class)
+                .setParameter("id", idParada)
+                .setParameter("dist", distancia)
+                .getResultList();
+    }
+
+//    public void asociarLineasCercanas(Parada parada) {
+//        EntityManager em = emf.createEntityManager();
+//
+//        String sql = """
+//        SELECT l.id FROM lineas l
+//        WHERE ST_DWithin(
+//            l.geom,
+//            ST_Transform(ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), 32721),
+//            10
+//        )
+//    """;
+//
+//        List<Long> ids = em.createNativeQuery(sql)
+//                .setParameter("lon", parada.getLon())
+//                .setParameter("lat", parada.getLat())
+//                .getResultList();
+//
+//        for (Long idLinea : ids) {
+//            ParadaLinea pl = new ParadaLinea();
+//            pl.setParada(parada);
+//            pl.setLinea(em.find(Linea.class, idLinea));
+//            em.persist(pl);
+//        }
+//    }
+
+    public boolean verificarConexion() {
+        try (EntityManager em = emf.createEntityManager()) {
+            em.createNativeQuery("SELECT 1").getSingleResult();
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error verificando conexión: " + e.getMessage());
+            return false;
+        }
+    }
+}
+===== ./main/java/uy/transporte/dto/ParadaDTO.java =====
+package uy.transporte.dto;
+
+public class ParadaDTO {
+    public String nombre;
+    public double lat;
+    public double lon;
+}
+===== ./main/java/uy/transporte/dto/RutaDTO.java =====
+package uy.transporte.dto;
+
+import java.io.Serializable;
+
+public class RutaDTO implements Serializable {
+    private String geojson; // Contendrá la geometría de la ruta en formato GeoJSON
+    private double costoTotal;
+    // Otros campos si quieres incluir detalles de los segmentos
+
+    public RutaDTO() {
+    }
+
+    public RutaDTO(String geojson, double costoTotal) {
+        this.geojson = geojson;
+        this.costoTotal = costoTotal;
+    }
+
+    // Getters y Setters...
+    public String getGeojson() { return geojson; }
+    public void setGeojson(String geojson) { this.geojson = geojson; }
+    public double getCostoTotal() { return costoTotal; }
+    public void setCostoTotal(double costoTotal) { this.costoTotal = costoTotal; }
+}
+===== ./main/java/uy/transporte/dto/LineaDTO.java =====
+package uy.transporte.dto;
+
+public class LineaDTO {
+    private String codigo;
+    private String origen;
+    private String destino;
+    private String empresa;
+    private String geom; // GeoJSON LineString
+    // Getters y setters
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getOrigen() {
+        return origen;
+    }
+
+    public void setOrigen(String origen) {
+        this.origen = origen;
+    }
+
+    public String getDestino() {
+        return destino;
+    }
+
+    public void setDestino(String destino) {
+        this.destino = destino;
+    }
+
+    public String getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(String empresa) {
+        this.empresa = empresa;
+    }
+
+    public String getGeom() {
+        return geom;
+    }
+
+    public void setGeom(String geom) {
+        this.geom = geom;
+    }
+}===== ./main/java/uy/transporte/json/GeometryAdapter.java =====
+package uy.transporte.json;
+
+import jakarta.json.bind.adapter.JsonbAdapter;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
+
+/**
+ * Adaptador JSON-B para serializar y deserializar geometrías JTS (Point, LineString, etc.)
+ * en formato GeoJSON.
+ */
+public class GeometryAdapter implements JsonbAdapter<Geometry, String> {
+
+    @Override
+    public String adaptToJson(Geometry geom) {
+        if (geom == null) return null;
+        GeoJsonWriter writer = new GeoJsonWriter();
+        return writer.write(geom);
+    }
+
+    @Override
+    public Geometry adaptFromJson(String json) {
+        if (json == null || json.isBlank()) return null;
+        try {
+            GeoJsonReader reader = new GeoJsonReader();
+            return reader.read(json);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al parsear GeoJSON: " + e.getMessage(), e);
+        }
+    }
+}
+===== ./main/java/uy/transporte/rest/ParadaResource.java =====
+package uy.transporte.rest;
+
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import uy.transporte.entity.Linea;
+import uy.transporte.entity.Parada;
+import uy.transporte.repository.ParadaRepository;
+
+import java.util.List;
+
+@Path("/paradas")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+public class ParadaResource {
+
+    private final ParadaRepository paradaRepository = new ParadaRepository();
+
+    @POST
+    public Response crearParada(Parada p) {
+        try {
+            paradaRepository.crear(p);
+            return Response.ok()
+                    .entity("{\"mensaje\":\"Parada creada correctamente\"}")
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\":\"No se pudo crear la parada: " + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+
+    //lineas cercanas a parada
+    @GET
+    @Path("/{id}/lineas")
+    public Response getLineasCercanas(@PathParam("id") Long id) {
+        try {
+            List<Linea> lineas = paradaRepository.findLineasByProximidad(id);
+            return Response.ok(lineas).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("/check-db")
+    public Response checkDB() {
+        boolean ok = paradaRepository.verificarConexion();
+        if (ok) {
+            return Response.ok("{\"status\":\"Conexión OK\"}").build();
+        } else {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"status\":\"Error de conexión a la base\"}")
+                    .build();
+        }
+    }
+}
+===== ./main/java/uy/transporte/rest/LineaResource.java =====
+package uy.transporte.rest;
+
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.geojson.GeoJsonReader;
+import uy.transporte.dto.LineaDTO;
+import uy.transporte.entity.Linea;
+import uy.transporte.repository.LineaRepository;
+
+import java.util.List;
+
+@Path("/lineas")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+public class LineaResource {
+
+    private final LineaRepository lineaRepository = new LineaRepository();
+
+    @GET
+    public List<Linea> getAll() {
+        return lineaRepository.findAll();
+    }
+
+    @POST
+    public Response create(LineaDTO dto) {
+        try {
+            Linea linea = new Linea();
+            linea.setCodigo(dto.getCodigo());
+            linea.setOrigen(dto.getOrigen());
+            linea.setDestino(dto.getDestino());
+            linea.setEmpresa(dto.getEmpresa());
+
+            // 🔹 Acá va el bloque que convierte el GeoJSON en LineString
+            try {
+                GeoJsonReader reader = new GeoJsonReader();
+                Geometry geom = reader.read(dto.getGeom()); // el JSON string con la geometría
+                geom.setSRID(32721);
+                linea.setGeom((LineString) geom);
+            } catch (ParseException e) {
+                throw new RuntimeException("Error al parsear GeoJSON: " + e.getMessage(), e);
+            }
+
+            // 🔹 Guardamos la entidad
+            lineaRepository.crear(linea);
+
+            return Response.status(Response.Status.CREATED).entity(linea).build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+}===== ./main/java/uy/transporte/rest/JerseyConfig.java =====
+package uy.transporte.rest;
+
+import org.glassfish.jersey.server.ResourceConfig;
+import jakarta.ws.rs.ApplicationPath;
+
+@ApplicationPath("/api")
+public class JerseyConfig extends ResourceConfig {
+    public JerseyConfig() {
+        packages("uy.transporte.rest");
+    }
+}===== ./main/resources/META-INF/persistence.xml =====
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+    <persistence-unit name="MiPersistencia" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+            <class>uy.transporte.model.Parada</class>
+            <class>uy.transporte.model.Linea</class>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://postgis:5432/transporte"/>
+            <property name="jakarta.persistence.jdbc.user" value="admin"/>
+            <property name="jakarta.persistence.jdbc.password" value="admin"/>
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="jakarta.persistence.schema-generation.database.action" value="update"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+===== ./main/webapp/index.xhtml =====
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html">
+<h:head>
+    <title>Mapa de Transporte</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@7.4.0/ol.css"/>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #0066cc;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        #controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 60px);
+        }
+
+        /* --- Popup estilo --- */
+        #popup {
+            background: white;
+            border-radius: 8px;
+            padding: 6px 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            min-width: 120px;
+            display: none;
+            border: 1px solid #ddd;
+        }
+
+        .popup-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .popup-icon {
+            font-size: 18px;
+        }
+        #modo-banner {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            z-index: 1000;
+            font-size: 14px;
+        }
+    </style>
+</h:head>
+
+<h:body>
+
+    <header>
+        <h1>🚍 Sistema de Transporte</h1>
+        <div id="controls">
+            <button onclick="activarAltaParada()">Agregar Parada</button>
+            <button onclick="activarAltaLinea()">Agregar Línea</button>
+            <button onclick="cancelarDibujo()">Cancelar Dibujo</button>
+        </div>
+    </header>
+
+    <div id="modo-banner">Modo: Libre</div> <!-- 🔹 Nuevo indicador -->
+
+    <div id="map"></div>
+
+    <!-- Popup para mostrar info de paradas -->
+    <div id="popup">
+        <div id="popup-content"></div>
+    </div>
+
+    <!-- OpenLayers -->
+    <script src="https://cdn.jsdelivr.net/npm/proj4@2.9.2/dist/proj4.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@7.4.0/dist/ol.js"></script>
+
+    <!-- Scripts separados -->
+    <script src="resources/js/mapa.js"></script>
+    <script src="resources/js/paradas.js"></script>
+    <script src="resources/js/lineas.js"></script>
+
+</h:body>
+</html>
+===== ./main/webapp/resources/js/paradas.js =====
+window.addEventListener("load", () => {
+  console.log("Cargando módulo de paradas...");
+
+  const map = window.map;
+  const paradasLayer = window.paradasLayer;
+
+  const popup = document.getElementById("popup");
+  const popupContent = document.getElementById("popup-content");
+
+  const overlay = new ol.Overlay({
+    element: popup,
+    positioning: "bottom-center",
+    stopEvent: false,
+    offset: [0, -15],
+  });
+  map.addOverlay(overlay);
+
+  function mostrarPopupBonito(coordinate, nombre, lineas = []) {
+    let html = `
+      <div class="popup-header">
+        <span class="popup-icon">🚌</span>
+        <strong>${nombre}</strong><br/>
+    `;
+
+    if (lineas.length > 0) {
+      html += `<small>Líneas: ${lineas.map(l => `${l.codigo} (${l.empresa})`).join(", ")}</small>`;
+    } else {
+      html += `<small>Sin líneas cercanas</small>`;
+    }
+
+    html += "</div>";
+
+    popupContent.innerHTML = html;
+    popup.style.display = "block";
+    overlay.setPosition(coordinate);
+  }
+
+
+  function ocultarPopup() {
+    popup.style.display = "none";
+    overlay.setPosition(undefined);
+  }
+
+  function agregarParada(coordinate) {
+    const nombre = prompt("Ingrese el nombre de la parada:");
+    if (!nombre || nombre.trim() === "") return;
+
+    const [lon, lat] = ol.proj.toLonLat(coordinate);
+
+    fetch("http://localhost:8081/transporte/api/paradas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, lat, lon }),
+    })
+      .then((r) => {
+        if (r.ok) {
+          alert("✅ Parada creada correctamente");
+          const params = paradasLayer.getSource().getParams();
+          params.t = Date.now();
+          paradasLayer.getSource().updateParams(params);
+
+          // Después de guardar parada exitosamente
+          window.modoActual = null;
+          window.actualizarBannerModo();
+
+        } else {
+          alert("❌ Error al crear parada");
+        }
+      })
+      .catch((err) => console.error("Error guardando parada:", err));
+  }
+
+  // --- Click en el mapa (solo si el modo es 'parada') ---
+  map.on("singleclick", function (evt) {
+    if (window.modoActual !== "parada") return; // ignorar si no está activo
+
+    const viewResolution = map.getView().getResolution();
+    const url = paradasLayer.getSource().getFeatureInfoUrl(
+      evt.coordinate,
+      viewResolution,
+      "EPSG:3857",
+      { INFO_FORMAT: "application/json" }
+    );
+
+    if (!url) {
+      ocultarPopup();
+      return;
+    }
+
+    fetch(url)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.features && json.features.length > 0) {
+          const props = json.features[0].properties;
+          const idParada = props.id || props.objectid;
+          const nombre = props.nombre;
+
+          // Obtener info de líneas asociadas desde tu backend
+          fetch(`http://localhost:8081/transporte/api/paradas/${idParada}/lineas`)
+            .then((r) => (r.ok ? r.json() : []))
+            .then((lineas) => mostrarPopupBonito(evt.coordinate, nombre, lineas))
+            .catch((err) => {
+              console.error("Error cargando líneas:", err);
+              mostrarPopupBonito(evt.coordinate, nombre, []);
+            });
+        } else {
+          ocultarPopup();
+          agregarParada(evt.coordinate);
+        }
+      })
+      .catch((err) => {
+        console.error("Error consultando GeoServer:", err);
+        ocultarPopup();
+      });
+  });
+
+  map.on("pointerdown", ocultarPopup);
+
+  // --- Botón ---
+    function activarAltaParada() {
+      window.modoActual = "parada";
+      window.actualizarBannerModo(); // 🔹 actualiza el banner
+      alert("🚌 Modo PARADA activado. Haga clic en el mapa para agregar una parada.");
+    }
+
+  window.activarAltaParada = activarAltaParada;
+});
+===== ./main/webapp/resources/js/mapa.js =====
+// --- Cargar el mapa ---
+window.addEventListener("load", () => {
+  console.log("Inicializando mapa...");
+
+  // --- Definir EPSG:32721 (UTM 21S) Antes de cargar el mapa---
+  proj4.defs("EPSG:32721", "+proj=utm +zone=21 +south +datum=WGS84 +units=m +no_defs");
+  ol.proj.proj4.register(proj4);
+
+  const baseLayer = new ol.layer.Tile({
+    source: new ol.source.OSM(),
+  });
+
+  const paradasLayer = new ol.layer.Tile({
+    source: new ol.source.TileWMS({
+      url: "http://localhost:8080/geoserver/transporte/wms",
+      params: {
+        LAYERS: "transporte:paradas",
+        TILED: true,
+        VERSION: "1.1.1",
+        FORMAT: "image/png",
+      },
+      serverType: "geoserver",
+      crossOrigin: "anonymous",
+    }),
+  });
+
+  const map = new ol.Map({
+    target: "map",
+    layers: [baseLayer, paradasLayer],
+    view: new ol.View({
+      center: ol.proj.fromLonLat([-56.1645, -34.9011]),
+      zoom: 13,
+    }),
+  });
+
+  // --- Exponer globalmente ---
+  window.map = map;
+  window.paradasLayer = paradasLayer;
+
+  // --- Estado global ---
+  window.modoActual = null; // "parada" | "linea" | null
+
+  console.log("Mapa listo");
+
+  // Función global para mostrar el modo actual en el banner
+  window.actualizarBannerModo = function () {
+    const banner = document.getElementById("modo-banner");
+    const modo = window.modoActual;
+
+    if (modo === "parada") {
+      banner.textContent = "Modo: Parada (clic para agregar)";
+    } else if (modo === "linea") {
+      banner.textContent = "Modo: Línea (doble clic o Enter para finalizar)";
+    } else {
+      banner.textContent = "Modo: Libre";
+    }
+  };
+});
+===== ./main/webapp/resources/js/lineas.js =====
+window.addEventListener("load", () => {
+  console.log("Cargando módulo de líneas...");
+
+  const map = window.map;
+
+  // --- Fuente vectorial y capa ---
+  const lineasSource = new ol.source.Vector();
+
+  const lineasLayer = new ol.layer.Vector({
+    source: lineasSource,
+    style: new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: "#FF0000",
+        width: 3,
+      }),
+    }),
+  });
+
+  map.addLayer(lineasLayer);
+
+  // ✅ Función local que usa lineasSource correctamente
+  async function cargarLineas() {
+    try {
+      const res = await fetch("http://localhost:8081/transporte/api/lineas");
+      const data = await res.json();
+
+      const format = new ol.format.GeoJSON();
+      const features = data.map((linea) => {
+        const geomObj = JSON.parse(linea.geom);
+        const geom = format.readGeometry(geomObj);
+        geom.transform("EPSG:32721", "EPSG:3857");
+
+        const f = new ol.Feature({ geometry: geom });
+        f.setProperties({
+          codigo: linea.codigo,
+          origen: linea.origen,
+          destino: linea.destino,
+          empresa: linea.empresa,
+        });
+        return f;
+      });
+
+      lineasSource.clear();
+      lineasSource.addFeatures(features);
+      console.log(`✅ ${features.length} líneas cargadas.`);
+    } catch (err) {
+      console.error("Error cargando líneas:", err);
+    }
+  }
+
+  // --- Llamada inicial (dentro del load, luego de definir lineasSource)
+  cargarLineas();
+
+  // --- Mostrar info al clickear sobre una línea ---
+  map.on("singleclick", (evt) => {
+    if (window.modoActual) return; // si estamos agregando, ignorar
+    map.forEachFeatureAtPixel(evt.pixel, (feature) => {
+      const props = feature.getProperties();
+      if (props.codigo) {
+        const info = `
+          Código: ${props.codigo}
+          Origen: ${props.origen}
+          Destino: ${props.destino}
+          Empresa: ${props.empresa}
+        `;
+        alert("🚌 Línea\n" + info.replace(/<br>/g, "\n"));
+      }
+    });
+  });
+
+  // --- Modo agregar línea ---
+  const drawLinea = new ol.interaction.Draw({
+    source: lineasSource,
+    type: "LineString",
+  });
+
+  function activarAltaLinea() {
+    window.modoActual = "linea";
+    window.actualizarBannerModo();
+    map.addInteraction(drawLinea);
+    alert("✏️ Dibuje la línea (doble clic o Enter para finalizar).");
+
+    drawLinea.once("drawend", async (evt) => {
+      map.removeInteraction(drawLinea);
+      window.modoActual = null;
+      window.actualizarBannerModo();
+
+      const geom = evt.feature.getGeometry().clone().transform("EPSG:3857", "EPSG:32721");
+      const geojson = new ol.format.GeoJSON().writeGeometryObject(geom);
+
+      const lineaData = {
+        codigo: prompt("Código de línea (ej: 104-este):"),
+        origen: prompt("Origen:"),
+        destino: prompt("Destino:"),
+        empresa: prompt("Empresa:"),
+        geom: JSON.stringify(geojson),
+      };
+
+      try {
+        const r = await fetch("http://localhost:8081/transporte/api/lineas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(lineaData),
+        });
+
+        if (r.ok) {
+          alert("✅ Línea creada correctamente");
+          cargarLineas(); // recarga el mapa con la nueva línea
+        } else {
+          const txt = await r.text();
+          console.error("Error:", txt);
+          alert("❌ Error al crear línea:\n" + txt);
+        }
+      } catch (err) {
+        console.error("Error guardando línea:", err);
+      }
+    });
+  }
+  function cancelarDibujo() {
+    // Si hay una interacción de dibujo activa, la removemos
+    map.removeInteraction(drawLinea);
+
+    // Volvemos a modo libre
+    window.modoActual = null;
+    window.actualizarBannerModo();
+
+    alert("❌ Dibujo cancelado.");
+  }
+
+  window.activarAltaLinea = activarAltaLinea;
+  window.cancelarDibujo = cancelarDibujo;
+});
+===== ./main/webapp/WEB-INF/web.xml =====
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+         version="5.0">
+
+    <display-name>Transporte</display-name>
+
+    <!-- Bienvenida -->
+    <welcome-file-list>
+        <welcome-file>index.xhtml</welcome-file>
+    </welcome-file-list>
+
+</web-app>
+===== ./main/webapp/WEB-INF/beans.xml =====
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="jakarta.enterprise.inject"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="jakarta.enterprise.inject
+                           https://jakarta.ee/xml/ns/jakartaee
+                           jakartaee_10.xsd"
+       bean-discovery-mode="all">
+</beans>

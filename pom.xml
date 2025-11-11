@@ -11,20 +11,14 @@
     <packaging>war</packaging>
 
     <properties>
-        <!-- Estas propiedades son para configurar los plugins. -->
-        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        
-        <!-- Mantengo las etiquetas de compiler source/target comentadas o borradas,
-             ya que usaremos <release> en el plugin, que es la práctica moderna.
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        -->
     </properties>
 
     <dependencies>
 
-        <!-- Jersey Core (JAX-RS implementación) -->
+        <!-- Jersey Core -->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
@@ -37,21 +31,21 @@
             <version>3.1.6</version>
         </dependency>
 
-        <!-- Inyección HK2 (Resuelve el error de InjectionManagerFactory) -->
+        <!-- Inyección HK2 (soluciona InjectionManagerFactory not found) -->
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
             <version>3.1.6</version>
         </dependency>
 
-        <!-- JSON soporte para Jersey (JSON-B) -->
+        <!-- JSON soporte -->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-binding</artifactId>
             <version>3.1.6</version>
         </dependency>
 
-        <!-- Jakarta EE API (Solo para compilar, ya que el servidor la provee) -->
+        <!-- Jakarta EE API (solo para compilar, no incluir en WAR) -->
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
@@ -60,7 +54,6 @@
         </dependency>
 
         <!-- #####################-->
-        <!-- # GEOSPATIAL Y DB # -->
         <!-- #####################-->
         <!-- Driver de PostgreSQL -->
         <dependency>
@@ -72,48 +65,22 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-spatial</artifactId>
-            <version>6.5.2.Final</version>
+            <version>6.5.2.Final</version> <!-- versión de Hibernate ORM que uses -->
         </dependency>
-        <!-- JTS: geometrías (Núcleo) -->
-        <dependency>
-            <groupId>org.locationtech.jts</groupId>
-            <artifactId>jts-core</artifactId>
-            <version>1.19.0</version>
-        </dependency>
-        <!-- JTS: IO (Entrada/Salida) -->
+        <!-- JTS: geometrías -->
         <dependency>
             <groupId>org.locationtech.jts.io</groupId>
             <artifactId>jts-io-common</artifactId>
             <version>1.19.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.19.0</version>
+        </dependency>
 
     </dependencies>
-    
-    <!-- Configuración del Build (Plugins) -->
     <build>
         <finalName>transporte</finalName>
-        <plugins>
-            <!-- 1. Plugin de Compilación (Maven Compiler Plugin) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <!-- Uso de <release>21</release> recomendado por Maven para Java 9+ -->
-                    <!-- Corrige la advertencia de "location of system modules is not set" -->
-                    <release>${java.version}</release>
-                </configuration>
-            </plugin>
-            
-            <!-- 2. Plugin de WAR (Maven WAR Plugin) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version> 
-                <!-- Versión actualizada para compatibilidad con Java 21 y Jakarta EE 10 -->
-            </plugin>
-        </plugins>
     </build>
-    
 </project>
-

@@ -1,0 +1,43 @@
+services:
+  postgis:
+    image: postgis/postgis:15-3.3
+    container_name: postgis_transporte
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: transporte
+    volumes:
+      - ./data/postgis:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  geoserver:
+    image: kartoza/geoserver:2.27.2
+    container_name: geoserver_transporte
+    restart: always
+    environment:
+      GEOSERVER_ADMIN_USER: admin
+      GEOSERVER_ADMIN_PASSWORD: geoserver
+    volumes:
+      - ./data/geoserver_data:/opt/geoserver/data_dir
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgis
+
+  tomcat:
+    build:
+      context: ./
+    container_name: tomcat_transporte
+    restart: always
+    environment:
+      TZ: America/Montevideo
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgis
+      - geoserver
+    volumes:
+      - ./logs:/usr/local/tomcat/logs

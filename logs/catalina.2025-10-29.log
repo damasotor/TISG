@@ -1,0 +1,71 @@
+29-Oct-2025 13:09:30.578 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.46
+29-Oct-2025 13:09:31.090 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Sep 8 2025 14:26:21 UTC
+29-Oct-2025 13:09:31.161 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.46.0
+29-Oct-2025 13:09:31.162 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+29-Oct-2025 13:09:31.162 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.6.87.2-microsoft-standard-WSL2
+29-Oct-2025 13:09:31.163 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+29-Oct-2025 13:09:31.163 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /opt/java/openjdk
+29-Oct-2025 13:09:31.164 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           21.0.8+9-LTS
+29-Oct-2025 13:09:31.164 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Eclipse Adoptium
+29-Oct-2025 13:09:31.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /usr/local/tomcat
+29-Oct-2025 13:09:31.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /usr/local/tomcat
+29-Oct-2025 13:09:31.625 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/usr/local/tomcat/conf/logging.properties
+29-Oct-2025 13:09:31.625 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+29-Oct-2025 13:09:31.626 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+29-Oct-2025 13:09:31.626 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+29-Oct-2025 13:09:31.626 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dsun.io.useCanonCaches=false
+29-Oct-2025 13:09:31.626 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+29-Oct-2025 13:09:31.626 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+29-Oct-2025 13:09:31.627 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+29-Oct-2025 13:09:31.627 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+29-Oct-2025 13:09:31.628 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+29-Oct-2025 13:09:31.628 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+29-Oct-2025 13:09:31.628 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+29-Oct-2025 13:09:31.628 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/usr/local/tomcat
+29-Oct-2025 13:09:31.629 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/usr/local/tomcat
+29-Oct-2025 13:09:31.629 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/usr/local/tomcat/temp
+29-Oct-2025 13:09:32.455 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.2].
+29-Oct-2025 13:09:33.356 INFO [main] org.apache.catalina.core.AprLifecycleListener.initializeSSL OpenSSL successfully initialized [OpenSSL 3.0.13 30 Jan 2024]
+29-Oct-2025 13:09:38.550 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+29-Oct-2025 13:09:38.980 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [13604] milliseconds
+29-Oct-2025 13:09:39.823 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+29-Oct-2025 13:09:39.824 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.46]
+29-Oct-2025 13:09:40.136 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [/usr/local/tomcat/webapps/transporte.war]
+29-Oct-2025 13:09:56.730 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+29-Oct-2025 13:09:57.320 WARNING [main] org.apache.catalina.util.SessionIdGeneratorBase.createSecureRandom Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [361] milliseconds.
+29-Oct-2025 13:10:01.657 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [/usr/local/tomcat/webapps/transporte.war] has finished in [21,521] ms
+29-Oct-2025 13:10:01.664 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+29-Oct-2025 13:10:01.787 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [22805] milliseconds
+29-Oct-2025 13:22:51.628 INFO [http-nio-8080-exec-5] org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation HHH000204: Processing PersistenceUnitInfo [name: MiPersistencia]
+29-Oct-2025 13:22:52.441 INFO [http-nio-8080-exec-5] org.hibernate.Version.logVersion HHH000412: Hibernate ORM core version 6.5.2.Final
+29-Oct-2025 13:22:52.503 INFO [http-nio-8080-exec-5] org.hibernate.spatial.integration.SpatialService.<init> HHH80000001: hibernate-spatial integration enabled : true
+29-Oct-2025 13:22:52.706 INFO [http-nio-8080-exec-5] org.hibernate.cache.internal.RegionFactoryInitiator.initiateService HHH000026: Second-level cache disabled
+29-Oct-2025 13:22:53.269 WARN [http-nio-8080-exec-5] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.configure HHH10001002: Using built-in connection pool (not intended for production use)
+29-Oct-2025 13:22:53.275 INFO [http-nio-8080-exec-5] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+29-Oct-2025 13:22:53.276 INFO [http-nio-8080-exec-5] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001012: Connecting with JDBC URL [jdbc:postgresql://postgis:5432/transporte]
+29-Oct-2025 13:22:53.277 INFO [http-nio-8080-exec-5] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001001: Connection properties: {password=****, user=admin}
+29-Oct-2025 13:22:53.277 INFO [http-nio-8080-exec-5] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001003: Autocommit mode: false
+29-Oct-2025 13:22:53.284 INFO [http-nio-8080-exec-5] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.<init> HHH10001115: Connection pool size: 20 (min=1)
+29-Oct-2025 13:22:54.443 WARN [http-nio-8080-exec-5] org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl.constructDialect HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+29-Oct-2025 13:22:54.508 INFO [http-nio-8080-exec-5] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+29-Oct-2025 13:22:54.715 INFO [http-nio-8080-exec-5] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+29-Oct-2025 13:22:55.839 INFO [http-nio-8080-exec-5] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeFunctions HHH80000004: hibernate-spatial adding function contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+29-Oct-2025 13:22:57.064 INFO [http-nio-8080-exec-5] org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+29-Oct-2025 13:22:57.104 INFO [http-nio-8080-exec-5] org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@7928d18] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+29-Oct-2025 13:23:17.526 INFO [http-nio-8080-exec-8] org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation HHH000204: Processing PersistenceUnitInfo [name: MiPersistencia]
+29-Oct-2025 13:23:17.534 INFO [http-nio-8080-exec-8] org.hibernate.spatial.integration.SpatialService.<init> HHH80000001: hibernate-spatial integration enabled : true
+29-Oct-2025 13:23:17.536 INFO [http-nio-8080-exec-8] org.hibernate.cache.internal.RegionFactoryInitiator.initiateService HHH000026: Second-level cache disabled
+29-Oct-2025 13:23:17.544 WARN [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.configure HHH10001002: Using built-in connection pool (not intended for production use)
+29-Oct-2025 13:23:17.545 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+29-Oct-2025 13:23:17.545 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001012: Connecting with JDBC URL [jdbc:postgresql://postgis:5432/transporte]
+29-Oct-2025 13:23:17.546 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001001: Connection properties: {password=****, user=admin}
+29-Oct-2025 13:23:17.548 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001003: Autocommit mode: false
+29-Oct-2025 13:23:17.549 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.<init> HHH10001115: Connection pool size: 20 (min=1)
+29-Oct-2025 13:23:17.619 WARN [http-nio-8080-exec-8] org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl.constructDialect HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+29-Oct-2025 13:23:17.624 INFO [http-nio-8080-exec-8] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+29-Oct-2025 13:23:17.645 INFO [http-nio-8080-exec-8] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+29-Oct-2025 13:23:17.697 INFO [http-nio-8080-exec-8] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeFunctions HHH80000004: hibernate-spatial adding function contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+29-Oct-2025 13:23:17.765 INFO [http-nio-8080-exec-8] org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+29-Oct-2025 13:23:17.766 INFO [http-nio-8080-exec-8] org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@3f617ab4] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+29-Oct-2025 16:19:45.309 WARN [http-nio-8080-exec-3] org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions SQL Error: 0, SQLState: 0A000
+29-Oct-2025 16:19:45.314 ERROR [http-nio-8080-exec-3] org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions ERROR: cached plan must not change result type

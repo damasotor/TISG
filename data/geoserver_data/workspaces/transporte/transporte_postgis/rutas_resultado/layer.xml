@@ -1,0 +1,16 @@
+<layer>
+  <name>rutas_resultado</name>
+  <id>LayerInfoImpl-6795d9af:19a3623ec54:-769a</id>
+  <type>VECTOR</type>
+  <defaultStyle>
+    <id>StyleInfoImpl--4890128a:199da63482d:-7fff</id>
+  </defaultStyle>
+  <resource class="featureType">
+    <id>FeatureTypeInfoImpl-6795d9af:19a3623ec54:-769b</id>
+  </resource>
+  <attribution>
+    <logoWidth>0</logoWidth>
+    <logoHeight>0</logoHeight>
+  </attribution>
+  <dateCreated>2025-10-30 20:11:42.380 UTC</dateCreated>
+</layer>

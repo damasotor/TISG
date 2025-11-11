@@ -1,0 +1,10 @@
+/*C4*/SET SCHEMA PUBLIC
+DISCONNECT
+/*C5*/SET SCHEMA PUBLIC
+DELETE FROM TILEPAGE WHERE KEY='transporte:paradas#WebMercatorQuad#image/png@0,0,13'
+INSERT INTO TILEPAGE VALUES('transporte:paradas#WebMercatorQuad#image/png@0,0,13','transporte:paradas#WebMercatorQuad#image/png',13,0,0,29362582,18.0E0,29364282,1.0E0,18)
+COMMIT
+DELETE FROM TILEPAGE WHERE KEY='transporte:paradas#WebMercatorQuad#image/png@1,0,13'
+INSERT INTO TILEPAGE VALUES('transporte:paradas#WebMercatorQuad#image/png@1,0,13','transporte:paradas#WebMercatorQuad#image/png',13,1,0,29362582,18.0E0,29364282,1.0E0,18)
+COMMIT
+DISCONNECT

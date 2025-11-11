@@ -1,0 +1,389 @@
+30-Oct-2025 04:36:13.175 WARN [http-nio-8080-exec-8] org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions SQL Error: 0, SQLState: 23502
+30-Oct-2025 04:36:13.181 ERROR [http-nio-8080-exec-8] org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions ERROR: null value in column "codigo" of relation "lineas" violates not-null constraint
+  Detail: Failing row contains (1, null, null, null, null, 0102000020D17F00000500000067C3EDE58EB32141C60782432A6A57412D7BDB...).
+30-Oct-2025 04:36:13.494 WARN [http-nio-8080-exec-9] org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions SQL Error: 0, SQLState: 23502
+30-Oct-2025 04:36:13.495 ERROR [http-nio-8080-exec-9] org.hibernate.engine.jdbc.spi.SqlExceptionHelper.logExceptions ERROR: null value in column "codigo" of relation "lineas" violates not-null constraint
+  Detail: Failing row contains (2, null, null, null, null, 0102000020D17F00000500000067C3EDE58EB32141C60782432A6A57412D7BDB...).
+30-Oct-2025 14:17:27.080 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.46
+30-Oct-2025 14:17:27.377 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Sep 8 2025 14:26:21 UTC
+30-Oct-2025 14:17:27.381 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.46.0
+30-Oct-2025 14:17:27.382 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+30-Oct-2025 14:17:27.383 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.6.87.2-microsoft-standard-WSL2
+30-Oct-2025 14:17:27.384 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+30-Oct-2025 14:17:27.384 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /opt/java/openjdk
+30-Oct-2025 14:17:27.385 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           21.0.8+9-LTS
+30-Oct-2025 14:17:27.386 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Eclipse Adoptium
+30-Oct-2025 14:17:27.387 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /usr/local/tomcat
+30-Oct-2025 14:17:27.387 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /usr/local/tomcat
+30-Oct-2025 14:17:27.896 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/usr/local/tomcat/conf/logging.properties
+30-Oct-2025 14:17:27.897 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+30-Oct-2025 14:17:27.898 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+30-Oct-2025 14:17:27.898 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+30-Oct-2025 14:17:27.898 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dsun.io.useCanonCaches=false
+30-Oct-2025 14:17:27.899 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+30-Oct-2025 14:17:27.900 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+30-Oct-2025 14:17:27.900 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+30-Oct-2025 14:17:27.901 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+30-Oct-2025 14:17:27.901 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+30-Oct-2025 14:17:27.902 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+30-Oct-2025 14:17:27.902 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+30-Oct-2025 14:17:27.903 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/usr/local/tomcat
+30-Oct-2025 14:17:27.903 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/usr/local/tomcat
+30-Oct-2025 14:17:27.903 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/usr/local/tomcat/temp
+30-Oct-2025 14:17:28.573 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.2].
+30-Oct-2025 14:17:28.966 INFO [main] org.apache.catalina.core.AprLifecycleListener.initializeSSL OpenSSL successfully initialized [OpenSSL 3.0.13 30 Jan 2024]
+30-Oct-2025 14:17:32.176 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 14:17:32.744 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [9168] milliseconds
+30-Oct-2025 14:17:33.101 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+30-Oct-2025 14:17:33.102 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.46]
+30-Oct-2025 14:17:33.278 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [/usr/local/tomcat/webapps/transporte.war]
+30-Oct-2025 14:17:43.816 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+30-Oct-2025 14:17:44.156 WARNING [main] org.apache.catalina.util.SessionIdGeneratorBase.createSecureRandom Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [113] milliseconds.
+30-Oct-2025 14:17:46.774 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [/usr/local/tomcat/webapps/transporte.war] has finished in [13,496] ms
+30-Oct-2025 14:17:46.780 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 14:17:46.849 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [14111] milliseconds
+30-Oct-2025 14:21:55.778 INFO [http-nio-8080-exec-4] org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation HHH000204: Processing PersistenceUnitInfo [name: MiPersistencia]
+30-Oct-2025 14:21:58.210 INFO [http-nio-8080-exec-4] org.hibernate.Version.logVersion HHH000412: Hibernate ORM core version 6.5.2.Final
+30-Oct-2025 14:21:58.320 INFO [http-nio-8080-exec-4] org.hibernate.spatial.integration.SpatialService.<init> HHH80000001: hibernate-spatial integration enabled : true
+30-Oct-2025 14:21:59.021 INFO [http-nio-8080-exec-4] org.hibernate.cache.internal.RegionFactoryInitiator.initiateService HHH000026: Second-level cache disabled
+30-Oct-2025 14:22:00.660 WARN [http-nio-8080-exec-4] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.configure HHH10001002: Using built-in connection pool (not intended for production use)
+30-Oct-2025 14:22:00.670 INFO [http-nio-8080-exec-4] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+30-Oct-2025 14:22:00.671 INFO [http-nio-8080-exec-4] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001012: Connecting with JDBC URL [jdbc:postgresql://postgis:5432/transporte]
+30-Oct-2025 14:22:00.673 INFO [http-nio-8080-exec-4] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001001: Connection properties: {password=****, user=admin}
+30-Oct-2025 14:22:00.674 INFO [http-nio-8080-exec-4] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001003: Autocommit mode: false
+30-Oct-2025 14:22:00.733 INFO [http-nio-8080-exec-4] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.<init> HHH10001115: Connection pool size: 20 (min=1)
+30-Oct-2025 14:22:02.852 WARN [http-nio-8080-exec-4] org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl.constructDialect HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+30-Oct-2025 14:22:02.957 INFO [http-nio-8080-exec-4] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 14:22:03.355 INFO [http-nio-8080-exec-4] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 14:22:05.959 INFO [http-nio-8080-exec-4] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeFunctions HHH80000004: hibernate-spatial adding function contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 14:22:07.802 INFO [http-nio-8080-exec-4] org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+30-Oct-2025 14:22:07.864 INFO [http-nio-8080-exec-4] org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@75e9b8b3] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+30-Oct-2025 14:22:08.696 WARN [http-nio-8080-exec-4] org.hibernate.tool.schema.internal.ExceptionHandlerLoggedImpl.handleException GenerationTarget encountered exception accepting command : Error executing DDL "
+    alter table if exists paradas 
+       alter column id set data type bigint" via JDBC [ERROR: cannot alter type of a column used by a view or rule
+  Detail: rule _RETURN on view vista_rutas_qgis depends on column "id"]
+	org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "
+    alter table if exists paradas 
+       alter column id set data type bigint" via JDBC [ERROR: cannot alter type of a column used by a view or rule
+  Detail: rule _RETURN on view vista_rutas_qgis depends on column "id"]
+		at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:94)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlString(AbstractSchemaMigrator.java:575)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlStrings(AbstractSchemaMigrator.java:515)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.migrateTable(AbstractSchemaMigrator.java:333)
+		at org.hibernate.tool.schema.internal.GroupedSchemaMigratorImpl.performTablesMigration(GroupedSchemaMigratorImpl.java:84)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.performMigration(AbstractSchemaMigrator.java:232)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.doMigration(AbstractSchemaMigrator.java:117)
+		at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:280)
+		at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$5(SchemaManagementToolCoordinator.java:144)
+		at java.base/java.util.HashMap.forEach(HashMap.java:1429)
+		at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:141)
+		at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:37)
+		at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:35)
+		at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:322)
+		at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:457)
+		at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1506)
+		at org.hibernate.jpa.HibernatePersistenceProvider.createEntityManagerFactory(HibernatePersistenceProvider.java:55)
+		at jakarta.persistence.Persistence.createEntityManagerFactory(Persistence.java:80)
+		at jakarta.persistence.Persistence.createEntityManagerFactory(Persistence.java:55)
+		at uy.transporte.repository.LineaRepository.<clinit>(LineaRepository.java:17)
+		at uy.transporte.rest.LineaResource.<init>(LineaResource.java:21)
+		at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+		at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+		at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+		at org.glassfish.hk2.utilities.reflection.ReflectionHelper.makeMe(ReflectionHelper.java:1356)
+		at org.jvnet.hk2.internal.ClazzCreator.createMe(ClazzCreator.java:271)
+		at org.jvnet.hk2.internal.ClazzCreator.create(ClazzCreator.java:395)
+		at org.jvnet.hk2.internal.SystemDescriptor.create(SystemDescriptor.java:466)
+		at org.glassfish.jersey.inject.hk2.RequestContext.findOrCreate(RequestContext.java:59)
+		at org.jvnet.hk2.internal.Utilities.createService(Utilities.java:2109)
+		at org.jvnet.hk2.internal.ServiceLocatorImpl.internalGetService(ServiceLocatorImpl.java:769)
+		at org.jvnet.hk2.internal.ServiceLocatorImpl.internalGetService(ServiceLocatorImpl.java:732)
+		at org.jvnet.hk2.internal.ServiceLocatorImpl.getService(ServiceLocatorImpl.java:702)
+		at org.glassfish.jersey.inject.hk2.AbstractHk2InjectionManager.getInstance(AbstractHk2InjectionManager.java:160)
+		at org.glassfish.jersey.inject.hk2.ImmediateHk2InjectionManager.getInstance(ImmediateHk2InjectionManager.java:30)
+		at org.glassfish.jersey.internal.inject.Injections.getOrCreate(Injections.java:122)
+		at org.glassfish.jersey.server.model.MethodHandler$ClassBasedMethodHandler.getInstance(MethodHandler.java:260)
+		at org.glassfish.jersey.server.internal.routing.PushMethodHandlerRouter.apply(PushMethodHandlerRouter.java:51)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:86)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:89)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:89)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:89)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage.apply(RoutingStage.java:69)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage.apply(RoutingStage.java:38)
+		at org.glassfish.jersey.process.internal.Stages.process(Stages.java:173)
+		at org.glassfish.jersey.server.ServerRuntime$1.run(ServerRuntime.java:255)
+		at org.glassfish.jersey.internal.Errors$1.call(Errors.java:248)
+		at org.glassfish.jersey.internal.Errors$1.call(Errors.java:244)
+		at org.glassfish.jersey.internal.Errors.process(Errors.java:292)
+		at org.glassfish.jersey.internal.Errors.process(Errors.java:274)
+		at org.glassfish.jersey.internal.Errors.process(Errors.java:244)
+		at org.glassfish.jersey.process.internal.RequestScope.runInScope(RequestScope.java:266)
+		at org.glassfish.jersey.server.ServerRuntime.process(ServerRuntime.java:242)
+		at org.glassfish.jersey.server.ApplicationHandler.handle(ApplicationHandler.java:697)
+		at org.glassfish.jersey.servlet.WebComponent.serviceImpl(WebComponent.java:394)
+		at org.glassfish.jersey.servlet.WebComponent.service(WebComponent.java:346)
+		at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:358)
+		at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:312)
+		at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:205)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+		at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+		at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+		at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+		at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+		at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+		at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+		at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:666)
+		at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+		at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+		at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+		at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+		at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+		at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1776)
+		at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:975)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:493)
+		at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+		at java.base/java.lang.Thread.run(Thread.java:1583)
+	Caused by: org.postgresql.util.PSQLException: ERROR: cannot alter type of a column used by a view or rule
+  Detail: rule _RETURN on view vista_rutas_qgis depends on column "id"
+		at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2725)
+		at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2412)
+		at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:371)
+		at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:502)
+		at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:419)
+		at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:341)
+		at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:326)
+		at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:302)
+		at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:297)
+		at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80)
+		... 80 more
+30-Oct-2025 14:22:39.074 INFO [http-nio-8080-exec-8] org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation HHH000204: Processing PersistenceUnitInfo [name: MiPersistencia]
+30-Oct-2025 14:22:39.084 INFO [http-nio-8080-exec-8] org.hibernate.spatial.integration.SpatialService.<init> HHH80000001: hibernate-spatial integration enabled : true
+30-Oct-2025 14:22:39.087 INFO [http-nio-8080-exec-8] org.hibernate.cache.internal.RegionFactoryInitiator.initiateService HHH000026: Second-level cache disabled
+30-Oct-2025 14:22:39.097 WARN [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.configure HHH10001002: Using built-in connection pool (not intended for production use)
+30-Oct-2025 14:22:39.098 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+30-Oct-2025 14:22:39.098 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001012: Connecting with JDBC URL [jdbc:postgresql://postgis:5432/transporte]
+30-Oct-2025 14:22:39.099 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001001: Connection properties: {password=****, user=admin}
+30-Oct-2025 14:22:39.100 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001003: Autocommit mode: false
+30-Oct-2025 14:22:39.100 INFO [http-nio-8080-exec-8] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.<init> HHH10001115: Connection pool size: 20 (min=1)
+30-Oct-2025 14:22:39.177 WARN [http-nio-8080-exec-8] org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl.constructDialect HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+30-Oct-2025 14:22:39.181 INFO [http-nio-8080-exec-8] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 14:22:39.199 INFO [http-nio-8080-exec-8] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 14:22:39.250 INFO [http-nio-8080-exec-8] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeFunctions HHH80000004: hibernate-spatial adding function contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 14:22:39.329 INFO [http-nio-8080-exec-8] org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+30-Oct-2025 14:22:39.330 INFO [http-nio-8080-exec-8] org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@4a641fea] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+30-Oct-2025 14:22:39.393 WARN [http-nio-8080-exec-8] org.hibernate.tool.schema.internal.ExceptionHandlerLoggedImpl.handleException GenerationTarget encountered exception accepting command : Error executing DDL "
+    alter table if exists paradas 
+       alter column id set data type bigint" via JDBC [ERROR: cannot alter type of a column used by a view or rule
+  Detail: rule _RETURN on view vista_rutas_qgis depends on column "id"]
+	org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "
+    alter table if exists paradas 
+       alter column id set data type bigint" via JDBC [ERROR: cannot alter type of a column used by a view or rule
+  Detail: rule _RETURN on view vista_rutas_qgis depends on column "id"]
+		at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:94)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlString(AbstractSchemaMigrator.java:575)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.applySqlStrings(AbstractSchemaMigrator.java:515)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.migrateTable(AbstractSchemaMigrator.java:333)
+		at org.hibernate.tool.schema.internal.GroupedSchemaMigratorImpl.performTablesMigration(GroupedSchemaMigratorImpl.java:84)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.performMigration(AbstractSchemaMigrator.java:232)
+		at org.hibernate.tool.schema.internal.AbstractSchemaMigrator.doMigration(AbstractSchemaMigrator.java:117)
+		at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.performDatabaseAction(SchemaManagementToolCoordinator.java:280)
+		at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.lambda$process$5(SchemaManagementToolCoordinator.java:144)
+		at java.base/java.util.HashMap.forEach(HashMap.java:1429)
+		at org.hibernate.tool.schema.spi.SchemaManagementToolCoordinator.process(SchemaManagementToolCoordinator.java:141)
+		at org.hibernate.boot.internal.SessionFactoryObserverForSchemaExport.sessionFactoryCreated(SessionFactoryObserverForSchemaExport.java:37)
+		at org.hibernate.internal.SessionFactoryObserverChain.sessionFactoryCreated(SessionFactoryObserverChain.java:35)
+		at org.hibernate.internal.SessionFactoryImpl.<init>(SessionFactoryImpl.java:322)
+		at org.hibernate.boot.internal.SessionFactoryBuilderImpl.build(SessionFactoryBuilderImpl.java:457)
+		at org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.build(EntityManagerFactoryBuilderImpl.java:1506)
+		at org.hibernate.jpa.HibernatePersistenceProvider.createEntityManagerFactory(HibernatePersistenceProvider.java:55)
+		at jakarta.persistence.Persistence.createEntityManagerFactory(Persistence.java:80)
+		at jakarta.persistence.Persistence.createEntityManagerFactory(Persistence.java:55)
+		at uy.transporte.repository.ParadaRepository.<clinit>(ParadaRepository.java:16)
+		at uy.transporte.rest.ParadaResource.<init>(ParadaResource.java:17)
+		at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+		at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+		at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+		at org.glassfish.hk2.utilities.reflection.ReflectionHelper.makeMe(ReflectionHelper.java:1356)
+		at org.jvnet.hk2.internal.ClazzCreator.createMe(ClazzCreator.java:271)
+		at org.jvnet.hk2.internal.ClazzCreator.create(ClazzCreator.java:395)
+		at org.jvnet.hk2.internal.SystemDescriptor.create(SystemDescriptor.java:466)
+		at org.glassfish.jersey.inject.hk2.RequestContext.findOrCreate(RequestContext.java:59)
+		at org.jvnet.hk2.internal.Utilities.createService(Utilities.java:2109)
+		at org.jvnet.hk2.internal.ServiceLocatorImpl.internalGetService(ServiceLocatorImpl.java:769)
+		at org.jvnet.hk2.internal.ServiceLocatorImpl.internalGetService(ServiceLocatorImpl.java:732)
+		at org.jvnet.hk2.internal.ServiceLocatorImpl.getService(ServiceLocatorImpl.java:702)
+		at org.glassfish.jersey.inject.hk2.AbstractHk2InjectionManager.getInstance(AbstractHk2InjectionManager.java:160)
+		at org.glassfish.jersey.inject.hk2.ImmediateHk2InjectionManager.getInstance(ImmediateHk2InjectionManager.java:30)
+		at org.glassfish.jersey.internal.inject.Injections.getOrCreate(Injections.java:122)
+		at org.glassfish.jersey.server.model.MethodHandler$ClassBasedMethodHandler.getInstance(MethodHandler.java:260)
+		at org.glassfish.jersey.server.internal.routing.PushMethodHandlerRouter.apply(PushMethodHandlerRouter.java:51)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:86)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:89)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:89)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage._apply(RoutingStage.java:89)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage.apply(RoutingStage.java:69)
+		at org.glassfish.jersey.server.internal.routing.RoutingStage.apply(RoutingStage.java:38)
+		at org.glassfish.jersey.process.internal.Stages.process(Stages.java:173)
+		at org.glassfish.jersey.server.ServerRuntime$1.run(ServerRuntime.java:255)
+		at org.glassfish.jersey.internal.Errors$1.call(Errors.java:248)
+		at org.glassfish.jersey.internal.Errors$1.call(Errors.java:244)
+		at org.glassfish.jersey.internal.Errors.process(Errors.java:292)
+		at org.glassfish.jersey.internal.Errors.process(Errors.java:274)
+		at org.glassfish.jersey.internal.Errors.process(Errors.java:244)
+		at org.glassfish.jersey.process.internal.RequestScope.runInScope(RequestScope.java:266)
+		at org.glassfish.jersey.server.ServerRuntime.process(ServerRuntime.java:242)
+		at org.glassfish.jersey.server.ApplicationHandler.handle(ApplicationHandler.java:697)
+		at org.glassfish.jersey.servlet.WebComponent.serviceImpl(WebComponent.java:394)
+		at org.glassfish.jersey.servlet.WebComponent.service(WebComponent.java:346)
+		at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:358)
+		at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:312)
+		at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:205)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+		at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+		at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+		at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+		at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+		at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+		at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+		at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:666)
+		at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+		at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+		at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+		at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+		at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+		at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1776)
+		at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:975)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:493)
+		at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+		at java.base/java.lang.Thread.run(Thread.java:1583)
+	Caused by: org.postgresql.util.PSQLException: ERROR: cannot alter type of a column used by a view or rule
+  Detail: rule _RETURN on view vista_rutas_qgis depends on column "id"
+		at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2725)
+		at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2412)
+		at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:371)
+		at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:502)
+		at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:419)
+		at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:341)
+		at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:326)
+		at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:302)
+		at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:297)
+		at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80)
+		... 80 more
+30-Oct-2025 17:32:01.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.46
+30-Oct-2025 17:32:01.585 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Sep 8 2025 14:26:21 UTC
+30-Oct-2025 17:32:01.599 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.46.0
+30-Oct-2025 17:32:01.600 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+30-Oct-2025 17:32:01.600 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.6.87.2-microsoft-standard-WSL2
+30-Oct-2025 17:32:01.601 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+30-Oct-2025 17:32:01.601 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /opt/java/openjdk
+30-Oct-2025 17:32:01.601 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           21.0.8+9-LTS
+30-Oct-2025 17:32:01.602 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Eclipse Adoptium
+30-Oct-2025 17:32:01.602 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /usr/local/tomcat
+30-Oct-2025 17:32:01.603 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /usr/local/tomcat
+30-Oct-2025 17:32:01.852 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/usr/local/tomcat/conf/logging.properties
+30-Oct-2025 17:32:01.852 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+30-Oct-2025 17:32:01.853 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+30-Oct-2025 17:32:01.853 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+30-Oct-2025 17:32:01.853 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dsun.io.useCanonCaches=false
+30-Oct-2025 17:32:01.854 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+30-Oct-2025 17:32:01.854 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+30-Oct-2025 17:32:01.854 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+30-Oct-2025 17:32:01.855 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+30-Oct-2025 17:32:01.855 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+30-Oct-2025 17:32:01.856 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+30-Oct-2025 17:32:01.856 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+30-Oct-2025 17:32:01.857 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/usr/local/tomcat
+30-Oct-2025 17:32:01.857 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/usr/local/tomcat
+30-Oct-2025 17:32:01.857 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/usr/local/tomcat/temp
+30-Oct-2025 17:32:02.288 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.2].
+30-Oct-2025 17:32:02.581 INFO [main] org.apache.catalina.core.AprLifecycleListener.initializeSSL OpenSSL successfully initialized [OpenSSL 3.0.13 30 Jan 2024]
+30-Oct-2025 17:32:06.026 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:32:06.399 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [9007] milliseconds
+30-Oct-2025 17:32:06.958 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+30-Oct-2025 17:32:06.958 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.46]
+30-Oct-2025 17:32:07.357 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [/usr/local/tomcat/webapps/transporte.war]
+30-Oct-2025 17:32:18.950 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+30-Oct-2025 17:32:19.398 WARNING [main] org.apache.catalina.util.SessionIdGeneratorBase.createSecureRandom Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [185] milliseconds.
+30-Oct-2025 17:32:22.715 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [/usr/local/tomcat/webapps/transporte.war] has finished in [15,358] ms
+30-Oct-2025 17:32:22.725 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:32:22.819 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [16417] milliseconds
+30-Oct-2025 17:37:48.064 INFO [Thread-1] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:37:48.335 INFO [Thread-1] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+30-Oct-2025 17:37:48.478 INFO [Thread-1] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:37:48.493 INFO [Thread-1] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:41:35.412 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.46
+30-Oct-2025 17:41:35.612 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Sep 8 2025 14:26:21 UTC
+30-Oct-2025 17:41:35.678 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.46.0
+30-Oct-2025 17:41:35.679 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+30-Oct-2025 17:41:35.679 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.6.87.2-microsoft-standard-WSL2
+30-Oct-2025 17:41:35.679 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+30-Oct-2025 17:41:35.679 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /opt/java/openjdk
+30-Oct-2025 17:41:35.680 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           21.0.8+9-LTS
+30-Oct-2025 17:41:35.680 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Eclipse Adoptium
+30-Oct-2025 17:41:35.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /usr/local/tomcat
+30-Oct-2025 17:41:35.681 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /usr/local/tomcat
+30-Oct-2025 17:41:35.943 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/usr/local/tomcat/conf/logging.properties
+30-Oct-2025 17:41:35.944 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+30-Oct-2025 17:41:35.944 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+30-Oct-2025 17:41:35.945 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+30-Oct-2025 17:41:35.945 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dsun.io.useCanonCaches=false
+30-Oct-2025 17:41:35.945 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+30-Oct-2025 17:41:35.945 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+30-Oct-2025 17:41:35.946 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+30-Oct-2025 17:41:35.946 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+30-Oct-2025 17:41:35.946 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+30-Oct-2025 17:41:35.947 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+30-Oct-2025 17:41:35.947 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+30-Oct-2025 17:41:35.947 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/usr/local/tomcat
+30-Oct-2025 17:41:35.948 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/usr/local/tomcat
+30-Oct-2025 17:41:35.948 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/usr/local/tomcat/temp
+30-Oct-2025 17:41:36.431 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.2].
+30-Oct-2025 17:41:36.685 INFO [main] org.apache.catalina.core.AprLifecycleListener.initializeSSL OpenSSL successfully initialized [OpenSSL 3.0.13 30 Jan 2024]
+30-Oct-2025 17:41:38.492 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:41:38.578 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [6651] milliseconds
+30-Oct-2025 17:41:38.826 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+30-Oct-2025 17:41:38.826 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.46]
+30-Oct-2025 17:41:38.986 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [/usr/local/tomcat/webapps/transporte.war]
+30-Oct-2025 17:41:44.388 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+30-Oct-2025 17:41:47.153 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [/usr/local/tomcat/webapps/transporte.war] has finished in [8,152] ms
+30-Oct-2025 17:41:47.165 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:41:47.242 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [9023] milliseconds
+30-Oct-2025 17:42:07.873 INFO [http-nio-8080-exec-2] org.hibernate.jpa.internal.util.LogHelper.logPersistenceUnitInformation HHH000204: Processing PersistenceUnitInfo [name: MiPersistencia]
+30-Oct-2025 17:42:08.432 INFO [http-nio-8080-exec-2] org.hibernate.Version.logVersion HHH000412: Hibernate ORM core version 6.5.2.Final
+30-Oct-2025 17:42:08.597 INFO [http-nio-8080-exec-2] org.hibernate.spatial.integration.SpatialService.<init> HHH80000001: hibernate-spatial integration enabled : true
+30-Oct-2025 17:42:08.783 INFO [http-nio-8080-exec-2] org.hibernate.cache.internal.RegionFactoryInitiator.initiateService HHH000026: Second-level cache disabled
+30-Oct-2025 17:42:09.350 WARN [http-nio-8080-exec-2] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.configure HHH10001002: Using built-in connection pool (not intended for production use)
+30-Oct-2025 17:42:09.355 INFO [http-nio-8080-exec-2] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001005: Loaded JDBC driver class: org.postgresql.Driver
+30-Oct-2025 17:42:09.356 INFO [http-nio-8080-exec-2] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001012: Connecting with JDBC URL [jdbc:postgresql://postgis:5432/transporte]
+30-Oct-2025 17:42:09.357 INFO [http-nio-8080-exec-2] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001001: Connection properties: {password=****, user=admin}
+30-Oct-2025 17:42:09.357 INFO [http-nio-8080-exec-2] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl.buildCreator HHH10001003: Autocommit mode: false
+30-Oct-2025 17:42:09.387 INFO [http-nio-8080-exec-2] org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl$PooledConnections.<init> HHH10001115: Connection pool size: 20 (min=1)
+30-Oct-2025 17:42:11.123 WARN [http-nio-8080-exec-2] org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl.constructDialect HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+30-Oct-2025 17:42:11.260 INFO [http-nio-8080-exec-2] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 17:42:11.597 INFO [http-nio-8080-exec-2] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeJdbcTypes HHH80000003: hibernate-spatial adding type contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 17:42:13.727 INFO [http-nio-8080-exec-2] org.hibernate.spatial.dialect.postgis.PostgisDialectContributor.contributeFunctions HHH80000004: hibernate-spatial adding function contributions from : org.hibernate.spatial.dialect.postgis.PostgisDialectContributor
+30-Oct-2025 17:42:15.632 INFO [http-nio-8080-exec-2] org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator.initiateService HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+30-Oct-2025 17:42:15.732 INFO [http-nio-8080-exec-2] org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl.getIsolatedConnection HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@123228fa] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+30-Oct-2025 17:59:24.220 INFO [Thread-1] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:59:24.224 INFO [Thread-1] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+30-Oct-2025 17:59:24.263 WARNING [Thread-1] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesJdbc The web application [transporte] registered the JDBC driver [org.postgresql.Driver] but failed to unregister it when the web application was stopped. To prevent a memory leak, the JDBC Driver has been forcibly unregistered.
+30-Oct-2025 17:59:24.265 WARNING [Thread-1] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesThreads The web application [transporte] appears to have started a thread named [Hibernate Connection Pool Validation Thread] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base/jdk.internal.misc.Unsafe.park(Native Method)
+ java.base/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+ java.base/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1763)
+ java.base/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)
+ java.base/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)
+ java.base/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1070)
+ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1130)
+ java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+ java.base/java.lang.Thread.run(Thread.java:1583)
+30-Oct-2025 17:59:24.529 INFO [Thread-1] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8080"]
+30-Oct-2025 17:59:24.538 INFO [Thread-1] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8080"]

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Transporte Serafín</title>
+
+  <!-- OpenLayers CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.4.0/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v7.4.0/dist/ol.js"></script>
+
+  <style>
+      body { margin: 0; font-family: Arial; }
+      #map { width: 100%; height: 90vh; }
+      #panel {
+        padding: 10px;
+        background: #eee;
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid #ccc;
+      }
+      #popup {
+        position: absolute;
+        background: white;
+        padding: 10px;
+        border: 1px solid black;
+        border-radius: 4px;
+        min-width: 150px;
+        display: none;
+      }
+  </style>
+</head>
+<body>
+
+<div id="panel">
+  <button id="btnCrearParada">Crear parada</button>
+  <button id="btnModoEliminar">Eliminar</button>
+  <button id="btnModoModificar">Modificar</button>
+  <button id="btnRefrescar">Refrescar</button>
+  <button onclick="crearRuta()" id="btnCrearRuta">Crear Ruta</button>
+
+</div>
+
+<div id="map"></div>
+
+<div id="popup">
+  <div id="popup-content"></div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

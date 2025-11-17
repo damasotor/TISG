@@ -1,0 +1,259 @@
+
+CREATE OR REPLACE FUNCTION public.calcular_ruta(inicio integer, fin integer)
+ RETURNS geometry
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_geom_total geometry;
+BEGIN
+    WITH
+    p_ini AS (
+        SELECT CASE 
+            WHEN ST_Distance(ST_Transform(p.geom,4326)::geography,
+                             ST_Transform(ST_StartPoint(v.geom),4326)::geography)
+                 < ST_Distance(ST_Transform(p.geom,4326)::geography,
+                               ST_Transform(ST_EndPoint(v.geom),4326)::geography)
+            THEN v.source
+            ELSE v.target
+        END AS nodo
+        FROM public.paradas p
+        JOIN public.v_sig_vias v
+          ON ST_DWithin(ST_Transform(p.geom,4326)::geography,
+                        ST_Transform(v.geom,4326)::geography, 150)
+        WHERE p.id = inicio
+        LIMIT 1
+    ),
+    p_fin AS (
+        SELECT CASE 
+            WHEN ST_Distance(ST_Transform(p.geom,4326)::geography,
+                             ST_Transform(ST_StartPoint(v.geom),4326)::geography)
+                 < ST_Distance(ST_Transform(p.geom,4326)::geography,
+                               ST_Transform(ST_EndPoint(v.geom),4326)::geography)
+            THEN v.source
+            ELSE v.target
+        END AS nodo
+        FROM public.paradas p
+        JOIN public.v_sig_vias v
+          ON ST_DWithin(ST_Transform(p.geom,4326)::geography,
+                        ST_Transform(v.geom,4326)::geography, 150)
+        WHERE p.id = fin
+        LIMIT 1
+    ),
+    ruta_calc AS (
+        SELECT ST_Transform(v.geom,4326) AS geom
+        FROM pgr_dijkstra(
+            'SELECT CAST("GID" AS integer) AS id,
+                    CAST(source AS integer) AS source,
+                    CAST(target AS integer) AS target,
+                    ST_Length(ST_Transform(geom,4326)::geography) AS cost
+             FROM public.v_sig_vias',
+            (SELECT nodo FROM p_ini),
+            (SELECT nodo FROM p_fin),
+            false
+        ) AS r
+        JOIN public.v_sig_vias v
+            ON v."GID"::integer = r.edge
+    )
+    SELECT ST_Multi(ST_LineMerge(ST_Union(geom))) INTO v_geom_total
+    FROM ruta_calc;
+
+    RETURN v_geom_total;
+END;
+$function$
+
+
+CREATE OR REPLACE FUNCTION public.registrar_ruta(id_inicio integer, id_fin integer)
+ RETURNS json
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_geom geometry;
+    v_distancia double precision;
+BEGIN
+    -- Manejar caso inicio = fin
+    IF id_inicio = id_fin THEN
+        RETURN json_build_object(
+            'success', true,
+            'geom', ST_AsGeoJSON(ST_Multi(ST_GeomFromText('MULTILINESTRING EMPTY', 4326))),
+            'distancia_m', 0
+        );
+    END IF;
+
+    BEGIN
+        -- Calcular ruta
+        v_geom := calcular_ruta(id_inicio, id_fin);
+
+        IF v_geom IS NULL THEN
+            RETURN json_build_object(
+                'success', false,
+                'message', 'No se pudo generar la ruta: ruta vacía'
+            );
+        END IF;
+
+        -- Calcular distancia
+        v_distancia := ST_Length(v_geom::geography);
+
+        -- Guardar en tabla
+        INSERT INTO rutas_resultado(start_stop_id, end_stop_id, route_geom, total_distance)
+        VALUES (id_inicio, id_fin, v_geom, v_distancia);
+
+        -- Devolver GeoJSON con cast seguro
+        RETURN json_build_object(
+            'success', true,
+            'geom', ST_AsGeoJSON(v_geom::geometry),
+            'distancia_m', v_distancia
+        );
+    EXCEPTION
+        WHEN OTHERS THEN
+            RETURN json_build_object(
+                'success', false,
+                'message', 'Error de base de datos: ' || SQLERRM
+            );
+    END;
+END;
+$function$
+
+
+transporte=# \dt
+                Listado de relaciones
+ Esquema |         Nombre          | Tipo  |  Dueño   
+---------+-------------------------+-------+----------
+ public  | lineas                  | tabla | admin
+ public  | lineas_raw              | tabla | admin
+ public  | paradas                 | tabla | admin
+ public  | paradas_raw             | tabla | admin
+ public  | paradas_sep             | tabla | admin
+ public  | rutas_optimas           | tabla | admin
+ public  | rutas_resultado         | tabla | admin
+ public  | spatial_ref_sys         | tabla | postgres
+ public  | temp_paradas_raw        | tabla | admin
+ public  | v_sig_vias              | tabla | admin
+ public  | v_sig_vias_vertices_pgr | tabla | admin
+(11 filas)
+
+transporte=# \df
+transporte=# \df *ruta*
+                                     Listado de funciones
+ Esquema |     Nombre     | Tipo de dato de salida |   Tipos de datos de argumentos    | Tipo 
+---------+----------------+------------------------+-----------------------------------+------
+ public  | calcular_ruta  | geometry               | inicio integer, fin integer       | func
+ public  | registrar_ruta | json                   | id_inicio integer, id_fin integer | func
+(2 filas)
+
+transporte=# \df *result*
+                                        Listado de funciones
+  Esquema   |         Nombre         | Tipo de dato de salida | Tipos de datos de argumentos | Tipo 
+------------+------------------------+------------------------+------------------------------+------
+ pg_catalog | pg_get_function_result | text                   | oid                          | func
+(1 fila)
+
+transporte=# \df *resultado*
+                              Listado de funciones
+ Esquema | Nombre | Tipo de dato de salida | Tipos de datos de argumentos | Tipo 
+---------+--------+------------------------+------------------------------+------
+(0 filas)
+
+transporte=# \sf calcular_ruta
+transporte=# \sf registrar_ruta
+transporte=# \d lineas
+                                        Tabla «public.lineas»
+ Columna |            Tipo            | Ordenamiento | Nulable  |            Por omisión             
+---------+----------------------------+--------------+----------+------------------------------------
+ id      | bigint                     |              | not null | nextval('lineas_id_seq'::regclass)
+ codigo  | character varying(255)     |              | not null | 
+ origen  | character varying(255)     |              | not null | 
+ destino | character varying(255)     |              | not null | 
+ empresa | character varying(255)     |              | not null | 
+ geom    | geometry(LineString,32721) |              | not null | 
+Índices:
+    "lineas_pkey" PRIMARY KEY, btree (id)
+    "idx_lineas_geom" gist (geom)
+
+transporte=# \d paradas
+                                      Tabla «public.paradas»
+ Columna |          Tipo          | Ordenamiento | Nulable  |             Por omisión             
+---------+------------------------+--------------+----------+-------------------------------------
+ id      | bigint                 |              | not null | nextval('paradas_id_seq'::regclass)
+ nombre  | character varying(255) |              |          | 
+ lat     | double precision       |              |          | 
+ lon     | double precision       |              |          | 
+ geom    | geometry(Point,4326)   |              |          | 
+Índices:
+    "paradas_pkey" PRIMARY KEY, btree (id)
+    "idx_paradas_geom" gist (geom)
+
+transporte=# \d paradas_sep
+               Tabla «public.paradas_sep»
+  Columna  | Tipo | Ordenamiento | Nulable | Por omisión 
+-----------+------+--------------+---------+-------------
+ id        | text |              |         | 
+ geom_hex  | text |              |         | 
+ lon       | text |              |         | 
+ lat       | text |              |         | 
+ nombre    | text |              |         | 
+ direccion | text |              |         | 
+
+transporte=# \d rutas_optimas
+                                             Tabla «public.rutas_optimas»
+    Columna     |              Tipo              | Ordenamiento | Nulable  |                Por omisión                
+----------------+--------------------------------+--------------+----------+-------------------------------------------
+ id             | integer                        |              | not null | nextval('rutas_optimas_id_seq'::regclass)
+ start_stop_id  | integer                        |              |          | 
+ end_stop_id    | integer                        |              |          | 
+ route_geom     | geometry(MultiLineString,4326) |              |          | 
+ segment_count  | integer                        |              |          | 
+ total_distance | double precision               |              |          | 
+ created_at     | timestamp without time zone    |              |          | now()
+Índices:
+    "rutas_optimas_pkey" PRIMARY KEY, btree (id)
+
+transporte=# \d rutas_resultado
+                                             Tabla «public.rutas_resultado»
+    Columna     |              Tipo              | Ordenamiento | Nulable  |                 Por omisión                 
+----------------+--------------------------------+--------------+----------+---------------------------------------------
+ id             | integer                        |              | not null | nextval('rutas_resultado_id_seq'::regclass)
+ start_stop_id  | integer                        |              |          | 
+ end_stop_id    | integer                        |              |          | 
+ route_geom     | geometry(MultiLineString,4326) |              |          | 
+ total_distance | double precision               |              |          | 
+ created_at     | timestamp without time zone    |              |          | now()
+Índices:
+    "rutas_resultado_pkey" PRIMARY KEY, btree (id)
+
+transporte=# \d v_sig_vias
+                                              Tabla «public.v_sig_vias»
+  Columna   |              Tipo              | Ordenamiento | Nulable  |                 Por omisión                 
+------------+--------------------------------+--------------+----------+---------------------------------------------
+ id         | integer                        |              | not null | nextval('v_sig_vias_id_seq'::regclass)
+ geom       | geometry(MultiLineString,4326) |              |          | 
+ NOM_CALLE  | character varying(36)          |              |          | 
+ COD_DEPTO  | integer                        |              |          | 
+ COD_LOCALI | bigint                         |              |          | 
+ GID        | numeric                        |              |          | 
+ COD_NOMBRE | bigint                         |              |          | 
+ TIPO       | character varying(30)          |              |          | 
+ source     | integer                        |              |          | 
+ target     | integer                        |              |          | 
+ gid_int    | integer                        |              | not null | nextval('v_sig_vias_gid_int_seq'::regclass)
+Índices:
+    "v_sig_vias_pkey" PRIMARY KEY, btree (id)
+    "v_sig_vias_geom_idx" gist (geom)
+    "v_sig_vias_gid_int_idx" btree (gid_int)
+    "v_sig_vias_source_idx" btree (source)
+    "v_sig_vias_target_idx" btree (target)
+
+transporte=# \d v_sig_vias_vertices_pgr
+                                     Tabla «public.v_sig_vias_vertices_pgr»
+ Columna  |         Tipo         | Ordenamiento | Nulable  |                     Por omisión                     
+----------+----------------------+--------------+----------+-----------------------------------------------------
+ id       | bigint               |              | not null | nextval('v_sig_vias_vertices_pgr_id_seq'::regclass)
+ cnt      | integer              |              |          | 
+ chk      | integer              |              |          | 
+ ein      | integer              |              |          | 
+ eout     | integer              |              |          | 
+ the_geom | geometry(Point,4326) |              |          | 
+Índices:
+    "v_sig_vias_vertices_pgr_pkey" PRIMARY KEY, btree (id)
+    "v_sig_vias_vertices_pgr_the_geom_idx" gist (the_geom)
+
+

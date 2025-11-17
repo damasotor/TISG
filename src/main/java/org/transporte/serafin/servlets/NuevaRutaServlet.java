@@ -24,10 +24,29 @@ public class NuevaRutaServlet extends HttpServlet {
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/transporte";
     private static final String DB_USER = "postgres";
     private static final String DB_PASS = "admin";
+    
+    
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+            
+        // --- INICIO DE CÓDIGO CORS ---
+        // 1. Permite solicitudes desde cualquier origen (*) para evitar el error CORS.
+        resp.setHeader("Access-Control-Allow-Origin", "*"); 
+        
+        // 2. Permite los métodos que se usarán (aunque aquí solo se use GET)
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        
+        // 3. Permite encabezados específicos (Content-Type es crucial)
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        
+        // 4. Manejar el pre-flight request de CORS (método OPTIONS)
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            return; // Detiene la ejecución para peticiones OPTIONS
+        }
+        // --- FIN DE CÓDIGO CORS ---
 
         resp.setContentType("application/json;charset=UTF-8");
         JSONObject json = new JSONObject();
@@ -53,7 +72,7 @@ public class NuevaRutaServlet extends HttpServlet {
             json.put("error", "idInicio y idFin deben ser números enteros");
             resp.getWriter().write(json.toString());
             return;
-        }
+     	   }
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
 
@@ -122,5 +141,6 @@ public class NuevaRutaServlet extends HttpServlet {
             out.print(json.toString());
         }
     }
+    
 }
 

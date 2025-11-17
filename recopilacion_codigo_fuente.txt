@@ -1,0 +1,1184 @@
+
+
+### COMIENZO DEL PROYECTO ###
+
+
+
+
+--- Archivo: ./src/main/java/org/transporte/serafin/servlets/NuevaRutaServlet.java ---
+
+
+package org.transporte.serafin.servlets;
+
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+@WebServlet("/api/nuevaRuta")
+public class NuevaRutaServlet extends HttpServlet {
+
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/transporte";
+    private static final String DB_USER = "postgres";
+    private static final String DB_PASS = "admin";
+    
+    
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+            
+        // --- INICIO DE CÓDIGO CORS ---
+        // 1. Permite solicitudes desde cualquier origen (*) para evitar el error CORS.
+        resp.setHeader("Access-Control-Allow-Origin", "*"); 
+        
+        // 2. Permite los métodos que se usarán (aunque aquí solo se use GET)
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        
+        // 3. Permite encabezados específicos (Content-Type es crucial)
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        
+        // 4. Manejar el pre-flight request de CORS (método OPTIONS)
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            return; // Detiene la ejecución para peticiones OPTIONS
+        }
+        // --- FIN DE CÓDIGO CORS ---
+
+        resp.setContentType("application/json;charset=UTF-8");
+        JSONObject json = new JSONObject();
+
+        String idInicioStr = req.getParameter("idInicio");
+        String idFinStr = req.getParameter("idFin");
+
+        if (idInicioStr == null || idFinStr == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            json.put("success", false);
+            json.put("error", "Faltan parámetros idInicio o idFin");
+            resp.getWriter().write(json.toString());
+            return;
+        }
+
+        int idInicio, idFin;
+        try {
+            idInicio = Integer.parseInt(idInicioStr);
+            idFin = Integer.parseInt(idFinStr);
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            json.put("success", false);
+            json.put("error", "idInicio y idFin deben ser números enteros");
+            resp.getWriter().write(json.toString());
+            return;
+     	   }
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+
+            String sql = "SELECT registrar_ruta(?, ?) AS resultado";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, idInicio);
+                ps.setInt(2, idFin);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String resultado = rs.getString("resultado");
+                        System.out.println(">>> registrar_ruta devolvió: " + resultado);
+
+                        if (resultado == null || resultado.trim().isEmpty()) {
+                            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                            json.put("success", false);
+                            json.put("error", "La función registrar_ruta devolvió NULL o vacío");
+                        } else {
+                            try {
+                                JSONObject obj = new JSONObject(resultado);
+                                boolean success = obj.optBoolean("success", false);
+                                json.put("success", success);
+
+                                if (success) {
+                                    String geomStr = obj.optString("geom", "{}");
+                                    try {
+                                        JSONObject geom = new JSONObject(geomStr);
+                                        json.put("coordinates", geom.optJSONArray("coordinates"));
+                                    } catch (JSONException ge) {
+                                        System.err.println("Error al parsear geom JSON: " + geomStr);
+                                        json.put("coordinates", new JSONArray());
+                                    }
+                                } else {
+                                    json.put("error", obj.optString("message", "Error desconocido"));
+                                }
+
+                            } catch (JSONException je) {
+                                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                                json.put("success", false);
+                                json.put("error", "JSON inválido devuelto por registrar_ruta: " + resultado);
+                                je.printStackTrace();
+                            }
+                        }
+
+                    } else {
+                        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        json.put("success", false);
+                        json.put("error", "Sin resultados de la función registrar_ruta");
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            json.put("success", false);
+            json.put("error", "Error de base de datos: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            json.put("success", false);
+            json.put("error", "Error interno del servidor: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        try (PrintWriter out = resp.getWriter()) {
+            out.print(json.toString());
+        }
+    }
+    
+}
+
+
+
+--- Archivo: ./src/main/java/org/transporte/serafin/servlets/NuevaParadaServlet.java ---
+
+
+package org.transporte.serafin.servlets;
+
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.*;
+import org.json.JSONObject;
+
+// ya esta registrado @WebServlet("/api/nuevaParada/*")
+public class NuevaParadaServlet extends HttpServlet {
+
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/transporte";
+    private static final String DB_USER = "admin";
+    private static final String DB_PASS = "admin";
+
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("ERROR: No se encontró el driver JDBC.", e);
+        }
+    }
+
+    private void setCorsHeaders(HttpServletResponse resp) {
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        setCorsHeaders(resp);
+        resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
+
+    // ==========================================================
+    // POST (Crear nueva parada)
+    // ==========================================================
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        setCorsHeaders(resp);
+        resp.setContentType("application/json; charset=UTF-8");
+
+        JSONObject out = new JSONObject();
+
+        try {
+            String body = req.getReader().lines().reduce("", (a, b) -> a + b);
+            JSONObject json = new JSONObject(body);
+
+            String nombre = json.optString("nombre", "Sin nombre");
+            double lon = json.getDouble("lon");
+            double lat = json.getDouble("lat");
+
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+                String sql = "INSERT INTO paradas (nombre, geom) VALUES (?, ST_SetSRID(ST_MakePoint(?, ?), 4326))";
+
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, nombre);
+                    ps.setDouble(2, lon);
+                    ps.setDouble(3, lat);
+                    ps.executeUpdate();
+                }
+
+                out.put("status", "ok");
+                out.put("message", "Parada registrada correctamente.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            out.put("status", "error_general");
+            out.put("message", e.getMessage());
+            resp.setStatus(400);
+        }
+
+        resp.getWriter().write(out.toString());
+    }
+
+    // ==========================================================
+    // DELETE /api/nuevaParada/{id}
+    // ==========================================================
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        setCorsHeaders(resp);
+        resp.setContentType("application/json; charset=UTF-8");
+        JSONObject out = new JSONObject();
+
+        try {
+            String pathInfo = req.getPathInfo(); // /{id}
+
+            if (pathInfo == null || pathInfo.length() <= 1) {
+                resp.setStatus(400);
+                out.put("status", "error");
+                out.put("message", "Falta ID en la URL.");
+                resp.getWriter().write(out.toString());
+                return;
+            }
+
+            long id = Long.parseLong(pathInfo.substring(1));
+
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+               String sql = "DELETE FROM paradas WHERE id = ?";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setLong(1, id);
+
+
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    out.put("status", "ok");
+                    out.put("message", "Parada eliminada.");
+                } else {
+                    resp.setStatus(404);
+                    out.put("status", "not_found");
+                    out.put("message", "No se encontró la parada.");
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(400);
+            out.put("status", "error_general");
+            out.put("message", e.getMessage());
+        }
+
+        resp.getWriter().write(out.toString());
+    }
+
+    // ==========================================================
+    // PUT -> actualizar nombre + posición de una parada
+    // ==========================================================
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        setCorsHeaders(resp);
+        resp.setContentType("application/json; charset=UTF-8");
+        JSONObject out = new JSONObject();
+
+        try {
+            String body = req.getReader().lines().reduce("", (a,b)->a+b);
+            JSONObject json = new JSONObject(body);
+
+            long id = json.getLong("id");
+            String nombre = json.getString("nombre");
+            double lon = json.getDouble("lon");
+            double lat = json.getDouble("lat");
+            
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+                String sql =
+                    "UPDATE paradas " +
+                    "SET nombre=?, lon=?, lat=?, geom=ST_SetSRID(ST_MakePoint(?, ?), 4326) " +
+                    "WHERE id=?";
+
+
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, nombre);
+                ps.setDouble(2, lon);
+                ps.setDouble(3, lat);
+                ps.setDouble(4, lon);   // geom x
+                ps.setDouble(5, lat);   // geom y
+                ps.setLong(6, id);      // where
+
+
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    out.put("status", "ok");
+                    out.put("message", "Parada actualizada.");
+                } else {
+                    resp.setStatus(404);
+                    out.put("status", "not_found");
+                    out.put("message", "No existe la parada.");
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(400);
+            out.put("status", "error_general");
+            out.put("message", e.getMessage());
+        }
+
+        resp.getWriter().write(out.toString());
+    }
+}
+
+
+--- Archivo: ./src/main/webapp/main.js ---
+
+
+// main.js transporte-Serafín
+console.log("main.js cargado correctamente");
+
+// MAPA
+const map = new ol.Map({
+  target: "map",
+  layers: [new ol.layer.Tile({ source: new ol.source.OSM() })],
+  view: new ol.View({
+    center: ol.proj.fromLonLat([-56.1645, -34.9011]),
+    zoom: 13
+  })
+});
+
+// CONFIG
+const GEOSERVER_WFS = "http://localhost:9999/geoserver/transporte/ows";
+const NAMESPACE = "transporte";
+const LAYER_NAME = "paradas";
+const PARADAS_API_BASE = "http://localhost:8080/transporte-1.0/api/nuevaParada";
+
+
+// FORMATO GEOJSON
+const geojsonFormat = new ol.format.GeoJSON();
+
+// FUENTE WFS
+const sourceParadas = new ol.source.Vector({
+  format: geojsonFormat,
+  loader: (extent, resolution, projection, success, failure) => {
+    const viewExtent = ol.proj.transformExtent(extent, projection.getCode(), "EPSG:4326");
+
+    const url =
+  `${GEOSERVER_WFS}?service=WFS&version=2.0.0&request=GetFeature` +
+  `&typeNames=${NAMESPACE}:${LAYER_NAME}` +
+  `&outputFormat=application/json&srsName=EPSG:4326` +
+  `&bbox=${viewExtent.join(",")},EPSG:4326`;
+
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        const feats = geojsonFormat.readFeatures(data, {
+          featureProjection: "EPSG:3857"
+        });
+        sourceParadas.clear(true);
+        sourceParadas.addFeatures(feats);
+        success(feats);
+      })
+      .catch(err => {
+        console.error("Error cargando WFS:", err);
+        failure();
+      });
+  },
+  strategy: ol.loadingstrategy.bbox
+});
+
+// CAPA
+const vectorLayerParadas = new ol.layer.Vector({
+  source: sourceParadas,
+  style: f =>
+    new ol.style.Style({
+      image: new ol.style.Circle({
+        radius: 7,
+        fill: new ol.style.Fill({ color: "red" }),
+        stroke: new ol.style.Stroke({ color: "#fff", width: 2 })
+      })
+    })
+});
+map.addLayer(vectorLayerParadas);
+// CAPA PARA RUTAS
+const sourceRuta = new ol.source.Vector();
+const layerRuta = new ol.layer.Vector({
+  source: sourceRuta,
+  style: new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: "blue",
+      width: 4
+    })
+  })
+});
+map.addLayer(layerRuta);
+
+
+// INTERACCIONES
+const select = new ol.interaction.Select({ layers: [vectorLayerParadas], hitTolerance: 6 });
+const modify = new ol.interaction.Modify({ features: select.getFeatures() });
+const translate = new ol.interaction.Translate({ features: select.getFeatures() });
+map.addInteraction(select);
+map.addInteraction(modify);
+map.addInteraction(translate);
+
+// MODOS
+let modoParada = false;
+let modoEliminar = false;
+let modoModificar = false;
+let paradaInicio = null;
+let paradaFin = null;
+
+// POPUP
+const popup = document.getElementById("popup");
+const popupContent = document.getElementById("popup-content");
+const overlay = new ol.Overlay({
+  element: popup,
+  autoPan: true,
+  positioning: "bottom-center",
+  offset: [0, -10]
+});
+map.addOverlay(overlay);
+
+// UI
+document.getElementById("btnCrearParada").onclick = () => {
+  modoParada = true;
+  modoEliminar = modoModificar = false;
+  alert("Modo CREAR: clic en el mapa para agregar una parada.");
+};
+
+document.getElementById("btnModoEliminar").onclick = () => {
+  modoEliminar = !modoEliminar;
+  modoParada = modoModificar = false;
+  alert(modoEliminar ? "Modo ELIMINAR activado" : "Modo ELIMINAR desactivado");
+};
+
+document.getElementById("btnModoModificar").onclick = () => {
+  modoModificar = !modoModificar;
+  modoParada = modoEliminar = false;
+  alert(modoModificar ? "Modo MODIFICAR activado" : "Modo MODIFICAR desactivado");
+};
+
+document.getElementById("btnRefrescar").onclick = () => {
+  sourceParadas.clear();
+  sourceParadas.refresh();
+};
+
+// HELPERS
+function getFeatureId(f) {
+  const fid = f.getId();
+  if (fid) {
+    const parts = fid.split(".");
+    const last = parts[parts.length - 1];
+    if (!isNaN(last)) return parseInt(last);
+  }
+  return parseInt(f.get("gid") || f.get("id") || f.get("objectid"));
+}
+
+function getFeatureById(id) {
+  return sourceParadas.getFeatures().find(f => getFeatureId(f) === id);
+}
+
+// API
+function crearParadaRemote(lon, lat, nombre) {
+  return fetch(PARADAS_API_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre, lon, lat })
+  }).then(r => r.json());
+}
+
+function eliminarParadaRemote(id) {
+  return fetch(`${PARADAS_API_BASE}/${id}`, { method: "DELETE" }).then(r => r.json());
+}
+
+function actualizarParadaRemote(id, nombre, lon, lat) {
+  const f = getFeatureById(id);
+
+  if (!f) {
+    console.error("Feature no encontrada para id", id);
+    return Promise.reject("Feature no encontrada");
+  }
+
+  if (nombre === undefined || nombre === null) {
+    nombre = f.get("nombre");
+  }
+
+  if (lon === undefined || lat === undefined) {
+    const coords = ol.proj.toLonLat(f.getGeometry().getCoordinates());
+    lon = coords[0];
+    lat = coords[1];
+  }
+
+  return fetch(`${PARADAS_API_BASE}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, nombre, lon, lat })
+  }).then(r => r.json());
+}
+
+// CLICK CREAR
+map.on("click", evt => {
+  if (!modoParada) return;
+
+  const [lon, lat] = ol.proj.toLonLat(evt.coordinate);
+  const nombre = prompt("Nombre de la parada:");
+  if (!nombre) {
+    modoParada = false;
+    return;
+  }
+
+  crearParadaRemote(lon, lat, nombre)
+    .then(r => {
+      alert(r.message || JSON.stringify(r));
+      sourceParadas.refresh();
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error creando parada.");
+    });
+
+  modoParada = false;
+});
+
+// CLICK POPUP + ELIMINAR
+map.on("singleclick", evt => {
+  const f = map.forEachFeatureAtPixel(evt.pixel, (ft, layer) =>
+    layer === vectorLayerParadas ? ft : null
+  );
+
+  if (modoEliminar && f) {
+    const id = getFeatureId(f);
+    if (!confirm("Eliminar parada " + id + "?")) return;
+
+    eliminarParadaRemote(id).then(r => {
+      alert(r.message || JSON.stringify(r));
+      sourceParadas.refresh();
+    });
+
+    modoEliminar = false;
+    return;
+  }
+
+  if (!f) {
+    popup.style.display = "none";
+    overlay.setPosition(undefined);
+    return;
+  }
+
+  const id = getFeatureId(f);
+  const nombre = f.get("nombre") || "";
+  const coord = f.getGeometry().getCoordinates();
+
+  popupContent.innerHTML = `
+    <div><strong>${nombre}</strong></div>
+    <div>ID: ${id}</div>
+    <div style="margin-top:8px;">
+      <button id="popupEditar">Editar</button>
+      <button id="popupEliminar">Eliminar</button>
+    </div>
+  `;
+
+  overlay.setPosition(coord);
+  popup.style.display = "block";
+
+  setTimeout(() => {
+    document.getElementById("popupEditar").onclick = () => {
+      const nuevo = prompt("Nuevo nombre:", nombre);
+      if (nuevo === null) return;
+
+      actualizarParadaRemote(id, nuevo).then(r => {
+        alert(r.message || JSON.stringify(r));
+        popup.style.display = "none";
+        sourceParadas.refresh();
+      });
+    };
+
+    document.getElementById("popupEliminar").onclick = () => {
+      if (!confirm("Eliminar parada " + id + "?")) return;
+
+      eliminarParadaRemote(id).then(r => {
+        alert(r.message || JSON.stringify(r));
+        popup.style.display = "none";
+        sourceParadas.refresh();
+      });
+    };
+  }, 20);
+});
+// SELECCIONAR DOS PARADAS PARA CREAR LA RUTA
+map.on("singleclick", function(evt) {
+  const f = map.forEachFeatureAtPixel(evt.pixel, (ft, layer) =>
+    layer === vectorLayerParadas ? ft : null
+  );
+
+  if (!f) return;
+
+  if (!paradaInicio) {
+    paradaInicio = f;
+    alert("Parada de inicio seleccionada: " + getFeatureId(f));
+  } else if (!paradaFin) {
+    paradaFin = f;
+    alert("Parada de fin seleccionada: " + getFeatureId(f));
+  }
+});
+
+// MANEJAR MODIFICACIÓN O TRASLADO
+function manejarEdicion(ev) {
+  const f = ev.features.item(0) || ev.features.getArray()[0];
+  const id = getFeatureId(f);
+  const [lon, lat] = ol.proj.toLonLat(f.getGeometry().getCoordinates());
+
+  actualizarParadaRemote(id, undefined, lon, lat).then(() => {
+    sourceParadas.refresh();
+  });
+}
+
+translate.on("translateend", manejarEdicion);
+modify.on("modifyend", manejarEdicion);
+
+// CARGA INICIAL
+sourceParadas.refresh();
+function crearRuta() {
+  if (!paradaInicio || !paradaFin) {
+    alert("Seleccioná primero la parada de inicio y luego la de fin.");
+    return;
+  }
+
+  const idInicio = getFeatureId(paradaInicio);
+  const idFin = getFeatureId(paradaFin);
+
+  const url = `http://localhost:8080/transporte-1.0/api/nuevaRuta?idInicio=${idInicio}&idFin=${idFin}`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      console.log("Ruta recibida:", data);
+
+      if (!data || !data.coordinates) {
+        alert("El servidor no devolvió una ruta válida");
+        return;
+      }
+
+      dibujarRuta( data.coordinates.flat() );
+
+      alert("Ruta creada exitosamente");
+
+      // reset
+      paradaInicio = null;
+      paradaFin = null;
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error creando ruta.");
+    });
+}
+
+/**
+ * Dibuja la ruta en el mapa.
+ * @param {Array<Array<number>>} coordinates - Un array de pares [longitud, latitud].
+ */
+function dibujarRuta(coordinates) {
+    console.log(`[dibujarRuta] Recibidas ${coordinates.length} coordenadas.`);
+
+    if (coordinates.length < 2) {
+        console.warn("[dibujarRuta] Se necesitan al menos 2 puntos.");
+        return;
+    }
+
+    // Log coordenadas crudas
+    console.log("[dibujarRuta] Coordenadas crudas:", coordinates);
+
+    // Limpiar rutas anteriores
+    sourceRuta.clear();
+
+    // Validación de formato
+    const coords3857 = [];
+    for (let i = 0; i < coordinates.length; i++) {
+        const c = coordinates[i];
+
+        if (!Array.isArray(c) || c.length !== 2) {
+            console.error(`[dibujarRuta] Coordenada inválida índice ${i}:`, c);
+            return;
+        }
+
+        const [lon, lat] = c;
+
+        if (isNaN(lon) || isNaN(lat)) {
+            console.error(`[dibujarRuta] Coordenada con NaN índice ${i}:`, c);
+            return;
+        }
+
+        if (Math.abs(lon) > 200 || Math.abs(lat) > 100) {
+            console.error(`[dibujarRuta] Coordenada fuera de rango índice ${i}:`, c);
+            return;
+        }
+
+        const transformed = ol.proj.fromLonLat([lon, lat]);
+        coords3857.push(transformed);
+    }
+
+    console.log("[dibujarRuta] Coordenadas transformadas:", coords3857);
+
+    const lineString = new ol.geom.LineString(coords3857);
+
+    // CHEQUEAR EXTENT
+    const extent = lineString.getExtent();
+    console.log("[dibujarRuta] Extent:", extent);
+
+    if (extent[0] === extent[2] && extent[1] === extent[3]) {
+        console.error("[dibujarRuta] EXTENT VACÍO — las coordenadas transformadas coinciden.");
+        return;
+    }
+
+    const feature = new ol.Feature({ geometry: lineString });
+    sourceRuta.addFeature(feature);
+
+    map.getView().fit(extent, {
+        padding: [50, 50, 50, 50],
+        duration: 800
+    });
+
+    console.log("[dibujarRuta] Ruta dibujada correctamente.");
+}
+
+
+
+
+--- Archivo: ./src/main/webapp/index.html ---
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Transporte Serafín</title>
+
+  <!-- OpenLayers CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.4.0/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v7.4.0/dist/ol.js"></script>
+
+  <style>
+      body { margin: 0; font-family: Arial; }
+      #map { width: 100%; height: 90vh; }
+      #panel {
+        padding: 10px;
+        background: #eee;
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid #ccc;
+      }
+      #popup {
+        position: absolute;
+        background: white;
+        padding: 10px;
+        border: 1px solid black;
+        border-radius: 4px;
+        min-width: 150px;
+        display: none;
+      }
+  </style>
+</head>
+<body>
+
+<div id="panel">
+  <button id="btnCrearParada">Crear parada</button>
+  <button id="btnModoEliminar">Eliminar</button>
+  <button id="btnModoModificar">Modificar</button>
+  <button id="btnRefrescar">Refrescar</button>
+  <button onclick="crearRuta()" id="btnCrearRuta">Crear Ruta</button>
+
+</div>
+
+<div id="map"></div>
+
+<div id="popup">
+  <div id="popup-content"></div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>
+
+
+--- Archivo: ./src/main/webapp/styles.css ---
+
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.control-panel {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 8px;
+  font-family: sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+button {
+  margin: 4px;
+  padding: 6px 10px;
+  border: none;
+  background: #1976d2;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0d47a1;
+}
+
+
+--- Archivo: ./src/main/resources/js/paradas.js ---
+
+
+window.addEventListener("load", () => {
+  console.log("Cargando módulo de paradas...");
+
+  const map = window.map;
+  const paradasLayer = window.paradasLayer;
+
+  const popup = document.getElementById("popup");
+  const popupContent = document.getElementById("popup-content");
+
+  const overlay = new ol.Overlay({
+    element: popup,
+    positioning: "bottom-center",
+    stopEvent: false,
+    offset: [0, -15],
+  });
+  map.addOverlay(overlay);
+
+  function mostrarPopupBonito(coordinate, nombre, lineas = []) {
+    let html = `
+      <div class="popup-header">
+        <span class="popup-icon">🚌</span>
+        <strong>${nombre}</strong><br/>
+    `;
+
+    if (lineas.length > 0) {
+      html += `<small>Líneas: ${lineas.map(l => `${l.codigo} (${l.empresa})`).join(", ")}</small>`;
+    } else {
+      html += `<small>Sin líneas cercanas</small>`;
+    }
+
+    html += "</div>";
+
+    popupContent.innerHTML = html;
+    popup.style.display = "block";
+    overlay.setPosition(coordinate);
+  }
+
+
+  function ocultarPopup() {
+    popup.style.display = "none";
+    overlay.setPosition(undefined);
+  }
+
+  function agregarParada(coordinate) {
+    const nombre = prompt("Ingrese el nombre de la parada:");
+    if (!nombre || nombre.trim() === "") return;
+
+    const [lon, lat] = ol.proj.toLonLat(coordinate);
+
+    fetch("http://localhost:8080/transporte/api/paradas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre, lat, lon }),
+    })
+      .then((r) => {
+        if (r.ok) {
+          alert("✅ Parada creada correctamente");
+          const params = paradasLayer.getSource().getParams();
+          params.t = Date.now();
+          paradasLayer.getSource().updateParams(params);
+
+          // Después de guardar parada exitosamente
+          window.modoActual = null;
+          window.actualizarBannerModo();
+
+        } else {
+          alert("❌ Error al crear parada");
+        }
+      })
+      .catch((err) => console.error("Error guardando parada:", err));
+  }
+
+  // --- Click en el mapa (solo si el modo es 'parada') ---
+  map.on("singleclick", function (evt) {
+    if (window.modoActual !== "parada") return; // ignorar si no está activo
+
+    const viewResolution = map.getView().getResolution();
+    const url = paradasLayer.getSource().getFeatureInfoUrl(
+      evt.coordinate,
+      viewResolution,
+      "EPSG:3857",
+      { INFO_FORMAT: "application/json" }
+    );
+
+    if (!url) {
+      ocultarPopup();
+      return;
+    }
+
+    fetch(url)
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.features && json.features.length > 0) {
+          const props = json.features[0].properties;
+          const idParada = props.id || props.objectid;
+          const nombre = props.nombre;
+
+          // Obtener info de líneas asociadas desde tu backend
+          fetch(`http://localhost:8080/transporte/api/paradas/${idParada}/lineas`)
+            .then((r) => (r.ok ? r.json() : []))
+            .then((lineas) => mostrarPopupBonito(evt.coordinate, nombre, lineas))
+            .catch((err) => {
+              console.error("Error cargando líneas:", err);
+              mostrarPopupBonito(evt.coordinate, nombre, []);
+            });
+        } else {
+          ocultarPopup();
+          agregarParada(evt.coordinate);
+        }
+      })
+      .catch((err) => {
+        console.error("Error consultando GeoServer:", err);
+        ocultarPopup();
+      });
+  });
+
+  map.on("pointerdown", ocultarPopup);
+
+  // --- Botón ---
+    function activarAltaParada() {
+      window.modoActual = "parada";
+      window.actualizarBannerModo(); // 🔹 actualiza el banner
+      alert("🚌 Modo PARADA activado. Haga clic en el mapa para agregar una parada.");
+    }
+
+  window.activarAltaParada = activarAltaParada;
+});
+
+
+--- Archivo: ./src/main/resources/js/mapa.js ---
+
+
+// --- Cargar el mapa ---
+window.addEventListener("load", () => {
+  console.log("Inicializando mapa...");
+
+  // --- Definir EPSG:32721 (UTM 21S) Antes de cargar el mapa---
+  proj4.defs("EPSG:32721", "+proj=utm +zone=21 +south +datum=WGS84 +units=m +no_defs");
+  ol.proj.proj4.register(proj4);
+
+  const baseLayer = new ol.layer.Tile({
+    source: new ol.source.OSM(),
+  });
+
+  const paradasLayer = new ol.layer.Tile({
+    source: new ol.source.TileWMS({
+      url: "http://localhost:8080/geoserver/transporte/wms",
+      params: {
+        LAYERS: "transporte:paradas",
+        TILED: true,
+        VERSION: "1.1.1",
+        FORMAT: "image/png",
+      },
+      serverType: "geoserver",
+      crossOrigin: "anonymous",
+    }),
+  });
+
+  const map = new ol.Map({
+    target: "map",
+    layers: [baseLayer, paradasLayer],
+    view: new ol.View({
+      center: ol.proj.fromLonLat([-56.1645, -34.9011]),
+      zoom: 13,
+    }),
+  });
+
+  // --- Exponer globalmente ---
+  window.map = map;
+  window.paradasLayer = paradasLayer;
+
+  // --- Estado global ---
+  window.modoActual = null; // "parada" | "linea" | null
+
+  console.log("Mapa listo");
+
+  // Función global para mostrar el modo actual en el banner
+  window.actualizarBannerModo = function () {
+    const banner = document.getElementById("modo-banner");
+    const modo = window.modoActual;
+
+    if (modo === "parada") {
+      banner.textContent = "Modo: Parada (clic para agregar)";
+    } else if (modo === "linea") {
+      banner.textContent = "Modo: Línea (doble clic o Enter para finalizar)";
+    } else {
+      banner.textContent = "Modo: Libre";
+    }
+  };
+});
+
+
+--- Archivo: ./src/main/resources/js/lineas.js ---
+
+
+window.addEventListener("load", () => {
+  console.log("Cargando módulo de líneas...");
+
+  const map = window.map;
+
+  // --- Fuente vectorial y capa ---
+  const lineasSource = new ol.source.Vector();
+
+  const lineasLayer = new ol.layer.Vector({
+    source: lineasSource,
+    style: new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: "#FF0000",
+        width: 3,
+      }),
+    }),
+  });
+
+  map.addLayer(lineasLayer);
+
+  // ✅ Función local que usa lineasSource correctamente
+  async function cargarLineas() {
+    try {
+      const res = await fetch("http://localhost:8080/transporte/api/lineas");
+      const data = await res.json();
+
+      const format = new ol.format.GeoJSON();
+      const features = data.map((linea) => {
+        const geomObj = JSON.parse(linea.geom);
+        const geom = format.readGeometry(geomObj);
+        geom.transform("EPSG:32721", "EPSG:3857");
+
+        const f = new ol.Feature({ geometry: geom });
+        f.setProperties({
+          codigo: linea.codigo,
+          origen: linea.origen,
+          destino: linea.destino,
+          empresa: linea.empresa,
+        });
+        return f;
+      });
+
+      lineasSource.clear();
+      lineasSource.addFeatures(features);
+      console.log(`✅ ${features.length} líneas cargadas.`);
+    } catch (err) {
+      console.error("Error cargando líneas:", err);
+    }
+  }
+
+  // --- Llamada inicial (dentro del load, luego de definir lineasSource)
+  cargarLineas();
+
+  // --- Mostrar info al clickear sobre una línea ---
+  map.on("singleclick", (evt) => {
+    if (window.modoActual) return; // si estamos agregando, ignorar
+    map.forEachFeatureAtPixel(evt.pixel, (feature) => {
+      const props = feature.getProperties();
+      if (props.codigo) {
+        const info = `
+          Código: ${props.codigo}
+          Origen: ${props.origen}
+          Destino: ${props.destino}
+          Empresa: ${props.empresa}
+        `;
+        alert("🚌 Línea\n" + info.replace(/<br>/g, "\n"));
+      }
+    });
+  });
+
+  // --- Modo agregar línea ---
+  const drawLinea = new ol.interaction.Draw({
+    source: lineasSource,
+    type: "LineString",
+  });
+
+  function activarAltaLinea() {
+    window.modoActual = "linea";
+    window.actualizarBannerModo();
+    map.addInteraction(drawLinea);
+    alert("✏️ Dibuje la línea (doble clic o Enter para finalizar).");
+
+    drawLinea.once("drawend", async (evt) => {
+      map.removeInteraction(drawLinea);
+      window.modoActual = null;
+      window.actualizarBannerModo();
+
+      const geom = evt.feature.getGeometry().clone().transform("EPSG:3857", "EPSG:32721");
+      const geojson = new ol.format.GeoJSON().writeGeometryObject(geom);
+
+      const lineaData = {
+        codigo: prompt("Código de línea (ej: 104-este):"),
+        origen: prompt("Origen:"),
+        destino: prompt("Destino:"),
+        empresa: prompt("Empresa:"),
+        geom: JSON.stringify(geojson),
+      };
+
+      try {
+        const r = await fetch("http://localhost:8080/transporte/api/lineas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(lineaData),
+        });
+
+        if (r.ok) {
+          alert("✅ Línea creada correctamente");
+          cargarLineas(); // recarga el mapa con la nueva línea
+        } else {
+          const txt = await r.text();
+          console.error("Error:", txt);
+          alert("❌ Error al crear línea:\n" + txt);
+        }
+      } catch (err) {
+        console.error("Error guardando línea:", err);
+      }
+    });
+  }
+  function cancelarDibujo() {
+    // Si hay una interacción de dibujo activa, la removemos
+    map.removeInteraction(drawLinea);
+
+    // Volvemos a modo libre
+    window.modoActual = null;
+    window.actualizarBannerModo();
+
+    alert("❌ Dibujo cancelado.");
+  }
+
+  window.activarAltaLinea = activarAltaLinea;
+  window.cancelarDibujo = cancelarDibujo;
+});

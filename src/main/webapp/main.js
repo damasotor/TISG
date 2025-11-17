@@ -117,12 +117,6 @@ document.getElementById("btnModoEliminar").onclick = () => {
   alert(modoEliminar ? "Modo ELIMINAR activado" : "Modo ELIMINAR desactivado");
 };
 
-document.getElementById("btnModoModificar").onclick = () => {
-  modoModificar = !modoModificar;
-  modoParada = modoEliminar = false;
-  alert(modoModificar ? "Modo MODIFICAR activado" : "Modo MODIFICAR desactivado");
-};
-
 document.getElementById("btnRefrescar").onclick = () => {
   sourceParadas.clear();
   sourceParadas.refresh();
@@ -181,110 +175,133 @@ function actualizarParadaRemote(id, nombre, lon, lat) {
   }).then(r => r.json());
 }
 
-// CLICK CREAR
-map.on("click", evt => {
-  if (!modoParada) return;
+//handler de eventos
 
-  const [lon, lat] = ol.proj.toLonLat(evt.coordinate);
-  const nombre = prompt("Nombre de la parada:");
-  if (!nombre) {
-    modoParada = false;
-    return;
-  }
-
-  crearParadaRemote(lon, lat, nombre)
-    .then(r => {
-      alert(r.message || JSON.stringify(r));
-      sourceParadas.refresh();
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Error creando parada.");
-    });
-
-  modoParada = false;
-});
-
-// CLICK POPUP + ELIMINAR
-map.on("singleclick", evt => {
-  const f = map.forEachFeatureAtPixel(evt.pixel, (ft, layer) =>
-    layer === vectorLayerParadas ? ft : null
-  );
-
-  if (modoEliminar && f) {
-    const id = getFeatureId(f);
-    if (!confirm("Eliminar parada " + id + "?")) return;
-
-    eliminarParadaRemote(id).then(r => {
-      alert(r.message || JSON.stringify(r));
-      sourceParadas.refresh();
-    });
-
-    modoEliminar = false;
-    return;
-  }
-
-  if (!f) {
-    popup.style.display = "none";
-    overlay.setPosition(undefined);
-    return;
-  }
-
-  const id = getFeatureId(f);
-  const nombre = f.get("nombre") || "";
-  const coord = f.getGeometry().getCoordinates();
-
-  popupContent.innerHTML = `
-    <div><strong>${nombre}</strong></div>
-    <div>ID: ${id}</div>
-    <div style="margin-top:8px;">
-      <button id="popupEditar">Editar</button>
-      <button id="popupEliminar">Eliminar</button>
-    </div>
-  `;
-
-  overlay.setPosition(coord);
-  popup.style.display = "block";
-
-  setTimeout(() => {
-    document.getElementById("popupEditar").onclick = () => {
-      const nuevo = prompt("Nuevo nombre:", nombre);
-      if (nuevo === null) return;
-
-      actualizarParadaRemote(id, nuevo).then(r => {
-        alert(r.message || JSON.stringify(r));
-        popup.style.display = "none";
-        sourceParadas.refresh();
-      });
-    };
-
-    document.getElementById("popupEliminar").onclick = () => {
-      if (!confirm("Eliminar parada " + id + "?")) return;
-
-      eliminarParadaRemote(id).then(r => {
-        alert(r.message || JSON.stringify(r));
-        popup.style.display = "none";
-        sourceParadas.refresh();
-      });
-    };
-  }, 20);
-});
-// SELECCIONAR DOS PARADAS PARA CREAR LA RUTA
 map.on("singleclick", function(evt) {
-  const f = map.forEachFeatureAtPixel(evt.pixel, (ft, layer) =>
-    layer === vectorLayerParadas ? ft : null
-  );
 
-  if (!f) return;
+    // 1) MODO CREAR PARADA
+    if (modoParada) {
+        const [lon, lat] = ol.proj.toLonLat(evt.coordinate);
+        const nombre = prompt("Nombre de la parada:");
+        if (!nombre) {
+            modoParada = false;
+            return;
+        }
 
-  if (!paradaInicio) {
-    paradaInicio = f;
-    alert("Parada de inicio seleccionada: " + getFeatureId(f));
-  } else if (!paradaFin) {
-    paradaFin = f;
-    alert("Parada de fin seleccionada: " + getFeatureId(f));
-  }
+        crearParadaRemote(lon, lat, nombre)
+            .then(r => {
+                alert(r.message || "Parada creada");
+                sourceParadas.refresh();
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error creando parada");
+            });
+
+        modoParada = false;
+        return;
+    }
+
+    // 2) DETECTAR FEATURE CLICKEADA
+    const f = map.forEachFeatureAtPixel(
+        evt.pixel,
+        (ft, layer) => (layer === vectorLayerParadas ? ft : null)
+    );
+
+    // Si el click NO es sobre una parada:
+    if (!f) {
+        popup.style.display = "none";
+        overlay.setPosition(undefined);
+        return;
+    }
+
+    // <-- AQUÍ definimos el id correctamente
+    const paradaId = getFeatureId(f);
+    const nombre = f.get("nombre") || "";
+
+    // 3) MODO ELIMINAR
+    if (modoEliminar) {
+        if (!confirm("¿Eliminar parada " + paradaId + "?")) {
+            modoEliminar = false;
+            return;
+        }
+
+        eliminarParadaRemote(paradaId).then(r => {
+            alert(r.message || "Eliminada");
+            sourceParadas.refresh();
+        }).catch(err => {
+            console.error("Error eliminando:", err);
+            alert("Error eliminando parada");
+        }).finally(() => {
+            modoEliminar = false;
+        });
+
+        return;
+    }
+
+    // 4) SELECCIÓN DE RUTA (solo si NO estamos en modo modificar)
+    if (!modoModificar) {
+        if (!paradaInicio) {
+            paradaInicio = f;
+            alert("Parada de inicio seleccionada: " + paradaId);
+            return;
+        } else if (!paradaFin) {
+            paradaFin = f;
+            alert("Parada de fin seleccionada: " + paradaId);
+            return;
+        }
+    }
+
+    // 5) MOSTRAR POPUP (editar / eliminar)
+    const coord = f.getGeometry().getCoordinates();
+
+    popupContent.innerHTML = `
+        <div><strong>${nombre}</strong></div>
+        <div>ID: ${paradaId}</div>
+        <div style="margin-top:8px;">
+            <button id="popupEditar">Editar</button>
+            <button id="popupEliminar2">Eliminar</button>
+        </div>
+    `;
+
+    overlay.setPosition(coord);
+    popup.style.display = "block";
+
+    setTimeout(() => {
+
+        document.getElementById("popupEditar").onclick = () => {
+            const nuevo = prompt("Nuevo nombre:", nombre);
+            if (nuevo === null) return;
+
+            actualizarParadaRemote(paradaId, nuevo)
+                .then(r => {
+                    alert(r.message || "Actualizado");
+                    popup.style.display = "none";
+                    sourceParadas.refresh();
+                })
+                .catch(err => {
+                    console.error("Error actualizando:", err);
+                    alert("Error actualizando parada");
+                });
+        };
+
+        document.getElementById("popupEliminar2").onclick = () => {
+            if (!confirm("¿Eliminar parada " + paradaId + "?")) return;
+
+            eliminarParadaRemote(paradaId).then(r => {
+                alert(r.message || "Eliminada");
+                popup.style.display = "none";
+                sourceParadas.refresh();
+            }).catch(err => {
+                console.error("Error eliminando desde popup:", err);
+                alert("Error eliminando parada");
+            });
+        };
+
+    }, 10);
 });
+
+
 
 // MANEJAR MODIFICACIÓN O TRASLADO
 function manejarEdicion(ev) {
@@ -311,7 +328,7 @@ function crearRuta() {
   const idInicio = getFeatureId(paradaInicio);
   const idFin = getFeatureId(paradaFin);
 
-  const url = `http://localhost:8081/api/nuevaRuta?idInicio=${idInicio}&idFin=${idFin}`;
+  const url = `http://localhost:8080/transporte-1.0/api/nuevaRuta?idInicio=${idInicio}&idFin=${idFin}`;
 
   fetch(url)
     .then(r => r.json())
@@ -323,15 +340,7 @@ function crearRuta() {
         return;
       }
 
-      // borrar rutas anteriores
-      sourceRuta.clear();
-
-      const geom = new ol.geom.LineString(
-        data.coordinates.map(c => ol.proj.fromLonLat(c))
-      );
-
-      const feat = new ol.Feature({ geometry: geom });
-      sourceRuta.addFeature(feat);
+      dibujarRuta( data.coordinates.flat() );
 
       alert("Ruta creada exitosamente");
 
@@ -343,6 +352,74 @@ function crearRuta() {
       console.error(err);
       alert("Error creando ruta.");
     });
+}
+
+/**
+ * Dibuja la ruta en el mapa.
+ * @param {Array<Array<number>>} coordinates - Un array de pares [longitud, latitud].
+ */
+function dibujarRuta(coordinates) {
+    console.log(`[dibujarRuta] Recibidas ${coordinates.length} coordenadas.`);
+
+    if (coordinates.length < 2) {
+        console.warn("[dibujarRuta] Se necesitan al menos 2 puntos.");
+        return;
+    }
+
+    // Log coordenadas crudas
+    console.log("[dibujarRuta] Coordenadas crudas:", coordinates);
+
+    // Limpiar rutas anteriores
+    sourceRuta.clear();
+
+    // Validación de formato
+    const coords3857 = [];
+    for (let i = 0; i < coordinates.length; i++) {
+        const c = coordinates[i];
+
+        if (!Array.isArray(c) || c.length !== 2) {
+            console.error(`[dibujarRuta] Coordenada inválida índice ${i}:`, c);
+            return;
+        }
+
+        const [lon, lat] = c;
+
+        if (isNaN(lon) || isNaN(lat)) {
+            console.error(`[dibujarRuta] Coordenada con NaN índice ${i}:`, c);
+            return;
+        }
+
+        if (Math.abs(lon) > 200 || Math.abs(lat) > 100) {
+            console.error(`[dibujarRuta] Coordenada fuera de rango índice ${i}:`, c);
+            return;
+        }
+
+        const transformed = ol.proj.fromLonLat([lon, lat]);
+        coords3857.push(transformed);
+    }
+
+    console.log("[dibujarRuta] Coordenadas transformadas:", coords3857);
+
+    const lineString = new ol.geom.LineString(coords3857);
+
+    // CHEQUEAR EXTENT
+    const extent = lineString.getExtent();
+    console.log("[dibujarRuta] Extent:", extent);
+
+    if (extent[0] === extent[2] && extent[1] === extent[3]) {
+        console.error("[dibujarRuta] EXTENT VACÍO — las coordenadas transformadas coinciden.");
+        return;
+    }
+
+    const feature = new ol.Feature({ geometry: lineString });
+    sourceRuta.addFeature(feature);
+
+    map.getView().fit(extent, {
+        padding: [50, 50, 50, 50],
+        duration: 800
+    });
+
+    console.log("[dibujarRuta] Ruta dibujada correctamente.");
 }
 
 

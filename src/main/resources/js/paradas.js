@@ -47,7 +47,7 @@ window.addEventListener("load", () => {
 
     const [lon, lat] = ol.proj.toLonLat(coordinate);
 
-    fetch("http://localhost:8081/transporte/api/paradas", {
+    fetch("http://localhost:8080/transporte/api/paradas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre, lat, lon }),
@@ -96,7 +96,7 @@ window.addEventListener("load", () => {
           const nombre = props.nombre;
 
           // Obtener info de líneas asociadas desde tu backend
-          fetch(`http://localhost:8081/transporte/api/paradas/${idParada}/lineas`)
+          fetch(`http://localhost:8080/transporte/api/paradas/${idParada}/lineas`)
             .then((r) => (r.ok ? r.json() : []))
             .then((lineas) => mostrarPopupBonito(evt.coordinate, nombre, lineas))
             .catch((err) => {

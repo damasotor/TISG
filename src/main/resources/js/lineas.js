@@ -21,7 +21,7 @@ window.addEventListener("load", () => {
   // ✅ Función local que usa lineasSource correctamente
   async function cargarLineas() {
     try {
-      const res = await fetch("http://localhost:8081/transporte/api/lineas");
+      const res = await fetch("http://localhost:8080/transporte/api/lineas");
       const data = await res.json();
 
       const format = new ol.format.GeoJSON();
@@ -97,7 +97,7 @@ window.addEventListener("load", () => {
       };
 
       try {
-        const r = await fetch("http://localhost:8081/transporte/api/lineas", {
+        const r = await fetch("http://localhost:8080/transporte/api/lineas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(lineaData),

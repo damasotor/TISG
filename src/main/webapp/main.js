@@ -77,6 +77,23 @@ const layerRuta = new ol.layer.Vector({
 });
 map.addLayer(layerRuta);
 
+// INTERACCIONES PARA RUTAS (editar geometría de la línea)
+const selectRuta = new ol.interaction.Select({
+  layers: [layerRuta],
+  hitTolerance: 6
+});
+
+const modifyRuta = new ol.interaction.Modify({
+  features: selectRuta.getFeatures()
+});
+
+// Al principio desactivadas: se activan sólo cuando el usuario toca el botón "Modificar ruta"
+selectRuta.setActive(false);
+modifyRuta.setActive(false);
+
+map.addInteraction(selectRuta);
+map.addInteraction(modifyRuta);
+
 
 // INTERACCIONES
 const select = new ol.interaction.Select({ layers: [vectorLayerParadas], hitTolerance: 6 });
@@ -92,6 +109,12 @@ let modoEliminar = false;
 let modoModificar = false;
 let paradaInicio = null;
 let paradaFin = null;
+let modoModificarRuta = false; 
+
+// ESTADO DE RUTA ACTUAL
+let rutaActualLonLat = null;  // array de [lon, lat] de la ruta actual
+let rutaIdInicio = null;
+let rutaIdFin = null;
 
 // POPUP
 const popup = document.getElementById("popup");
@@ -121,6 +144,28 @@ document.getElementById("btnRefrescar").onclick = () => {
   sourceParadas.clear();
   sourceParadas.refresh();
 };
+
+// Botón para MODIFICAR RUTA (mover nodos de la línea ya calculada)
+const btnModificarRuta = document.getElementById("btnModificarRuta");
+if (btnModificarRuta) {
+  btnModificarRuta.onclick = () => {
+    if (!rutaActualLonLat || !rutaActualLonLat.length) {
+      alert("No hay ninguna ruta dibujada para modificar.");
+      return;
+    }
+
+    modoModificarRuta = !modoModificarRuta;
+    selectRuta.setActive(modoModificarRuta);
+    modifyRuta.setActive(modoModificarRuta);
+
+    alert(
+      modoModificarRuta
+        ? "Modo MODIFICAR RUTA activado: hacé clic en la línea y arrastrá un vértice."
+        : "Modo MODIFICAR RUTA desactivado."
+    );
+  };
+}
+
 
 // HELPERS
 function getFeatureId(f) {
@@ -319,6 +364,59 @@ modify.on("modifyend", manejarEdicion);
 
 // CARGA INICIAL
 sourceParadas.refresh();
+// Cuando se termina de modificar la geometría de la RUTA
+modifyRuta.on("modifyend", (evt) => {
+  const features = evt.features.getArray();
+  if (!features.length) return;
+
+  const geom = features[0].getGeometry();
+  if (!(geom instanceof ol.geom.LineString)) {
+    console.warn("[modifyRuta] La geometría no es una LineString.");
+    return;
+  }
+
+  // Coord en proyección del mapa → pasamos a lon/lat
+  const coords3857 = geom.getCoordinates();
+  const coordsLonLat = coords3857.map(c => ol.proj.toLonLat(c));
+
+  if (!rutaActualLonLat || rutaActualLonLat.length !== coordsLonLat.length) {
+    // Algo raro: cambió la cantidad de vértices
+    rutaActualLonLat = coordsLonLat;
+    console.warn("[modifyRuta] Cambio de cantidad de vértices, se actualiza copia local pero no se recalcula.");
+    return;
+  }
+
+  // Detectar qué vértice se movió
+  const EPS = 1e-5;
+  let movedIndex = -1;
+
+  for (let i = 0; i < coordsLonLat.length; i++) {
+    const [lon0, lat0] = rutaActualLonLat[i];
+    const [lon1, lat1] = coordsLonLat[i];
+    const d = Math.hypot(lon1 - lon0, lat1 - lat0);
+    if (d > EPS) {
+      movedIndex = i;
+      break;
+    }
+  }
+
+  if (movedIndex === -1) {
+    console.log("[modifyRuta] No se detectó vértice movido.");
+    return;
+  }
+
+  const [viaLon, viaLat] = coordsLonLat[movedIndex];
+  console.log("[modifyRuta] Vértice movido en índice", movedIndex, "a", viaLon, viaLat);
+
+  // Actualizamos la copia local
+  rutaActualLonLat = coordsLonLat;
+
+  // Pedir recálculo al backend usando este punto como "via"
+  recalcularRutaConVia(viaLon, viaLat);
+});
+
+
+
 function crearRuta() {
   if (!paradaInicio || !paradaFin) {
     alert("Seleccioná primero la parada de inicio y luego la de fin.");
@@ -340,11 +438,20 @@ function crearRuta() {
         return;
       }
 
-      dibujarRuta( data.coordinates.flat() );
+      // Guardar estado de la ruta actual
+      rutaIdInicio = idInicio;
+      rutaIdFin = idFin;
+
+      // Aplanar el MultiLineString → array de [lon,lat]
+      const coords = data.coordinates.flat();
+      rutaActualLonLat = coords.map(c => [c[0], c[1]]);
+
+      // Dibujar
+      dibujarRuta(rutaActualLonLat);
 
       alert("Ruta creada exitosamente");
 
-      // reset
+      // Reset de selección de paradas (pero NO de rutaIdInicio/Fin)
       paradaInicio = null;
       paradaFin = null;
     })
@@ -353,6 +460,7 @@ function crearRuta() {
       alert("Error creando ruta.");
     });
 }
+
 
 /**
  * Dibuja la ruta en el mapa.
@@ -422,4 +530,38 @@ function dibujarRuta(coordinates) {
     console.log("[dibujarRuta] Ruta dibujada correctamente.");
 }
 
+function recalcularRutaConVia(viaLon, viaLat) {
+  if (rutaIdInicio == null || rutaIdFin == null) {
+    console.warn("[recalcularRutaConVia] No hay id de inicio/fin guardados.");
+    return;
+  }
+
+  const url =
+    `http://localhost:8080/transporte-1.0/api/nuevaRutaConVia` +
+    `?idInicio=${rutaIdInicio}&idFin=${rutaIdFin}` +
+    `&viaLon=${viaLon}&viaLat=${viaLat}`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      console.log("Ruta recalculada:", data);
+
+      if (!data || !data.coordinates) {
+        alert("El servidor no devolvió una ruta válida al recalcular.");
+        return;
+      }
+
+      // Aplanar el MultiLineString → array de [lon,lat]
+      const coords = data.coordinates.flat();
+      rutaActualLonLat = coords.map(c => [c[0], c[1]]);
+
+      // Redibujar la ruta con la nueva geometría "pegada" a las calles
+      dibujarRuta(rutaActualLonLat);
+      alert("Ruta recalculada con el nuevo punto intermedio.");
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error recalculando la ruta.");
+    });
+}
 

@@ -18,78 +18,80 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-@WebServlet("/api/nuevaRuta")
-public class NuevaRutaServlet extends HttpServlet {
+@WebServlet("/api/nuevaRutaConVia")
+public class NuevaRutaConViaServlet extends HttpServlet {
 
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/transporte";
-    private static final String DB_USER = "admin";
+    // Usamos la misma config que en NuevaRutaServlet
+    private static final String DB_URL  = "jdbc:postgresql://localhost:5432/transporte";
+    private static final String DB_USER = "postgres";
     private static final String DB_PASS = "admin";
-    
-    
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-            
-        // --- INICIO DE CÓDIGO CORS ---
-        // 1. Permite solicitudes desde cualquier origen (*) para evitar el error CORS.
-        resp.setHeader("Access-Control-Allow-Origin", "*"); 
-        
-        // 2. Permite los métodos que se usarán (aunque aquí solo se use GET)
+
+        // --- INICIO DE CÓDIGO CORS (igual que en NuevaRutaServlet) ---
+        resp.setHeader("Access-Control-Allow-Origin", "*");
         resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        
-        // 3. Permite encabezados específicos (Content-Type es crucial)
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        
-        // 4. Manejar el pre-flight request de CORS (método OPTIONS)
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
             resp.setStatus(HttpServletResponse.SC_OK);
-            return; // Detiene la ejecución para peticiones OPTIONS
+            return;
         }
         // --- FIN DE CÓDIGO CORS ---
 
         resp.setContentType("application/json;charset=UTF-8");
         JSONObject json = new JSONObject();
 
+        // Leer parámetros
         String idInicioStr = req.getParameter("idInicio");
-        String idFinStr = req.getParameter("idFin");
+        String idFinStr    = req.getParameter("idFin");
+        String viaLonStr   = req.getParameter("viaLon");
+        String viaLatStr   = req.getParameter("viaLat");
 
-        if (idInicioStr == null || idFinStr == null) {
+        if (idInicioStr == null || idFinStr == null || viaLonStr == null || viaLatStr == null) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             json.put("success", false);
-            json.put("error", "Faltan parámetros idInicio o idFin");
+            json.put("error", "Faltan parámetros idInicio, idFin, viaLon o viaLat");
             resp.getWriter().write(json.toString());
             return;
         }
 
         int idInicio, idFin;
+        double viaLon, viaLat;
+
         try {
             idInicio = Integer.parseInt(idInicioStr);
-            idFin = Integer.parseInt(idFinStr);
+            idFin    = Integer.parseInt(idFinStr);
+            viaLon   = Double.parseDouble(viaLonStr);
+            viaLat   = Double.parseDouble(viaLatStr);
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             json.put("success", false);
-            json.put("error", "idInicio y idFin deben ser números enteros");
+            json.put("error", "Parámetros numéricos inválidos");
             resp.getWriter().write(json.toString());
             return;
-     	   }
+        }
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
 
-            String sql = "SELECT registrar_ruta(?, ?) AS resultado";
+            String sql = "SELECT registrar_ruta_con_via(?, ?, ?, ?) AS resultado";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setInt(1, idInicio);
-                ps.setInt(2, idFin);
+                ps.setDouble(2, viaLon);
+                ps.setDouble(3, viaLat);
+                ps.setInt(4, idFin);
 
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         String resultado = rs.getString("resultado");
-                        System.out.println(">>> registrar_ruta devolvió: " + resultado);
+                        System.out.println(">>> registrar_ruta_con_via devolvió: " + resultado);
 
                         if (resultado == null || resultado.trim().isEmpty()) {
                             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                             json.put("success", false);
-                            json.put("error", "La función registrar_ruta devolvió NULL o vacío");
+                            json.put("error", "La función registrar_ruta_con_via devolvió NULL o vacío");
                         } else {
                             try {
                                 JSONObject obj = new JSONObject(resultado);
@@ -112,7 +114,7 @@ public class NuevaRutaServlet extends HttpServlet {
                             } catch (JSONException je) {
                                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                                 json.put("success", false);
-                                json.put("error", "JSON inválido devuelto por registrar_ruta: " + resultado);
+                                json.put("error", "JSON inválido devuelto por registrar_ruta_con_via: " + resultado);
                                 je.printStackTrace();
                             }
                         }
@@ -120,7 +122,7 @@ public class NuevaRutaServlet extends HttpServlet {
                     } else {
                         resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                         json.put("success", false);
-                        json.put("error", "Sin resultados de la función registrar_ruta");
+                        json.put("error", "Sin resultados de la función registrar_ruta_con_via");
                     }
                 }
             }
@@ -130,17 +132,9 @@ public class NuevaRutaServlet extends HttpServlet {
             json.put("success", false);
             json.put("error", "Error de base de datos: " + e.getMessage());
             e.printStackTrace();
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            json.put("success", false);
-            json.put("error", "Error interno del servidor: " + e.getMessage());
-            e.printStackTrace();
         }
 
-        try (PrintWriter out = resp.getWriter()) {
-            out.print(json.toString());
-        }
+        resp.getWriter().write(json.toString());
     }
-    
 }
 

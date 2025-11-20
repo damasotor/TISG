@@ -466,12 +466,6 @@ document.getElementById("btnModoEliminar").onclick = () => {
   alert(modoEliminar ? "Modo ELIMINAR activado" : "Modo ELIMINAR desactivado");
 };
 
-document.getElementById("btnModoModificar").onclick = () => {
-  modoModificar = !modoModificar;
-  modoParada = modoEliminar = false;
-  alert(modoModificar ? "Modo MODIFICAR activado" : "Modo MODIFICAR desactivado");
-};
-
 document.getElementById("btnRefrescar").onclick = () => {
   sourceParadas.clear();
   sourceParadas.refresh();
@@ -530,110 +524,133 @@ function actualizarParadaRemote(id, nombre, lon, lat) {
   }).then(r => r.json());
 }
 
-// CLICK CREAR
-map.on("click", evt => {
-  if (!modoParada) return;
+//handler de eventos
 
-  const [lon, lat] = ol.proj.toLonLat(evt.coordinate);
-  const nombre = prompt("Nombre de la parada:");
-  if (!nombre) {
-    modoParada = false;
-    return;
-  }
-
-  crearParadaRemote(lon, lat, nombre)
-    .then(r => {
-      alert(r.message || JSON.stringify(r));
-      sourceParadas.refresh();
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Error creando parada.");
-    });
-
-  modoParada = false;
-});
-
-// CLICK POPUP + ELIMINAR
-map.on("singleclick", evt => {
-  const f = map.forEachFeatureAtPixel(evt.pixel, (ft, layer) =>
-    layer === vectorLayerParadas ? ft : null
-  );
-
-  if (modoEliminar && f) {
-    const id = getFeatureId(f);
-    if (!confirm("Eliminar parada " + id + "?")) return;
-
-    eliminarParadaRemote(id).then(r => {
-      alert(r.message || JSON.stringify(r));
-      sourceParadas.refresh();
-    });
-
-    modoEliminar = false;
-    return;
-  }
-
-  if (!f) {
-    popup.style.display = "none";
-    overlay.setPosition(undefined);
-    return;
-  }
-
-  const id = getFeatureId(f);
-  const nombre = f.get("nombre") || "";
-  const coord = f.getGeometry().getCoordinates();
-
-  popupContent.innerHTML = `
-    <div><strong>${nombre}</strong></div>
-    <div>ID: ${id}</div>
-    <div style="margin-top:8px;">
-      <button id="popupEditar">Editar</button>
-      <button id="popupEliminar">Eliminar</button>
-    </div>
-  `;
-
-  overlay.setPosition(coord);
-  popup.style.display = "block";
-
-  setTimeout(() => {
-    document.getElementById("popupEditar").onclick = () => {
-      const nuevo = prompt("Nuevo nombre:", nombre);
-      if (nuevo === null) return;
-
-      actualizarParadaRemote(id, nuevo).then(r => {
-        alert(r.message || JSON.stringify(r));
-        popup.style.display = "none";
-        sourceParadas.refresh();
-      });
-    };
-
-    document.getElementById("popupEliminar").onclick = () => {
-      if (!confirm("Eliminar parada " + id + "?")) return;
-
-      eliminarParadaRemote(id).then(r => {
-        alert(r.message || JSON.stringify(r));
-        popup.style.display = "none";
-        sourceParadas.refresh();
-      });
-    };
-  }, 20);
-});
-// SELECCIONAR DOS PARADAS PARA CREAR LA RUTA
 map.on("singleclick", function(evt) {
-  const f = map.forEachFeatureAtPixel(evt.pixel, (ft, layer) =>
-    layer === vectorLayerParadas ? ft : null
-  );
 
-  if (!f) return;
+    // 1) MODO CREAR PARADA
+    if (modoParada) {
+        const [lon, lat] = ol.proj.toLonLat(evt.coordinate);
+        const nombre = prompt("Nombre de la parada:");
+        if (!nombre) {
+            modoParada = false;
+            return;
+        }
 
-  if (!paradaInicio) {
-    paradaInicio = f;
-    alert("Parada de inicio seleccionada: " + getFeatureId(f));
-  } else if (!paradaFin) {
-    paradaFin = f;
-    alert("Parada de fin seleccionada: " + getFeatureId(f));
-  }
+        crearParadaRemote(lon, lat, nombre)
+            .then(r => {
+                alert(r.message || "Parada creada");
+                sourceParadas.refresh();
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error creando parada");
+            });
+
+        modoParada = false;
+        return;
+    }
+
+    // 2) DETECTAR FEATURE CLICKEADA
+    const f = map.forEachFeatureAtPixel(
+        evt.pixel,
+        (ft, layer) => (layer === vectorLayerParadas ? ft : null)
+    );
+
+    // Si el click NO es sobre una parada:
+    if (!f) {
+        popup.style.display = "none";
+        overlay.setPosition(undefined);
+        return;
+    }
+
+    // <-- AQUÍ definimos el id correctamente
+    const paradaId = getFeatureId(f);
+    const nombre = f.get("nombre") || "";
+
+    // 3) MODO ELIMINAR
+    if (modoEliminar) {
+        if (!confirm("¿Eliminar parada " + paradaId + "?")) {
+            modoEliminar = false;
+            return;
+        }
+
+        eliminarParadaRemote(paradaId).then(r => {
+            alert(r.message || "Eliminada");
+            sourceParadas.refresh();
+        }).catch(err => {
+            console.error("Error eliminando:", err);
+            alert("Error eliminando parada");
+        }).finally(() => {
+            modoEliminar = false;
+        });
+
+        return;
+    }
+
+    // 4) SELECCIÓN DE RUTA (solo si NO estamos en modo modificar)
+    if (!modoModificar) {
+        if (!paradaInicio) {
+            paradaInicio = f;
+            alert("Parada de inicio seleccionada: " + paradaId);
+            return;
+        } else if (!paradaFin) {
+            paradaFin = f;
+            alert("Parada de fin seleccionada: " + paradaId);
+            return;
+        }
+    }
+
+    // 5) MOSTRAR POPUP (editar / eliminar)
+    const coord = f.getGeometry().getCoordinates();
+
+    popupContent.innerHTML = `
+        <div><strong>${nombre}</strong></div>
+        <div>ID: ${paradaId}</div>
+        <div style="margin-top:8px;">
+            <button id="popupEditar">Editar</button>
+            <button id="popupEliminar2">Eliminar</button>
+        </div>
+    `;
+
+    overlay.setPosition(coord);
+    popup.style.display = "block";
+
+    setTimeout(() => {
+
+        document.getElementById("popupEditar").onclick = () => {
+            const nuevo = prompt("Nuevo nombre:", nombre);
+            if (nuevo === null) return;
+
+            actualizarParadaRemote(paradaId, nuevo)
+                .then(r => {
+                    alert(r.message || "Actualizado");
+                    popup.style.display = "none";
+                    sourceParadas.refresh();
+                })
+                .catch(err => {
+                    console.error("Error actualizando:", err);
+                    alert("Error actualizando parada");
+                });
+        };
+
+        document.getElementById("popupEliminar2").onclick = () => {
+            if (!confirm("¿Eliminar parada " + paradaId + "?")) return;
+
+            eliminarParadaRemote(paradaId).then(r => {
+                alert(r.message || "Eliminada");
+                popup.style.display = "none";
+                sourceParadas.refresh();
+            }).catch(err => {
+                console.error("Error eliminando desde popup:", err);
+                alert("Error eliminando parada");
+            });
+        };
+
+    }, 10);
 });
+
+
 
 // MANEJAR MODIFICACIÓN O TRASLADO
 function manejarEdicion(ev) {
@@ -794,11 +811,11 @@ function dibujarRuta(coordinates) {
 <body>
 
 <div id="panel">
-  <button id="btnCrearParada">Crear parada</button>
-  <button id="btnModoEliminar">Eliminar</button>
-  <button id="btnModoModificar">Modificar</button>
-  <button id="btnRefrescar">Refrescar</button>
-  <button onclick="crearRuta()" id="btnCrearRuta">Crear Ruta</button>
+<button type="button" id="btnCrearParada">Crear parada</button>
+<button type="button" id="btnModoEliminar">Eliminar</button>
+<button type="button" id="btnModoModificar">Modificar</button>
+<button type="button" id="btnRefrescar">Refrescar</button>
+<button type="button" onclick="crearRuta()" id="btnCrearRuta">Crear Ruta</button>
 
 </div>
 

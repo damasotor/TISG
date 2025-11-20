@@ -145,6 +145,13 @@ document.getElementById("btnRefrescar").onclick = () => {
   sourceParadas.refresh();
 };
 
+document.getElementById("btnBuscarLineasEmpresa").onclick = () => {
+  const nombre = prompt("Nombre de la empresa (ej: CUTCSA):");
+  if (!nombre) return;
+  buscarLineasPorEmpresa(nombre);
+};
+
+
 // Botón para MODIFICAR RUTA (mover nodos de la línea ya calculada)
 const btnModificarRuta = document.getElementById("btnModificarRuta");
 if (btnModificarRuta) {
@@ -303,17 +310,23 @@ map.on("singleclick", function(evt) {
     popupContent.innerHTML = `
         <div><strong>${nombre}</strong></div>
         <div>ID: ${paradaId}</div>
+
+        <div id="popupLineas" style="margin-top:8px; font-size:12px; color:#333;">
+            <em>Cargando líneas asociadas...</em>
+        </div>
+
         <div style="margin-top:8px;">
             <button id="popupEditar">Editar</button>
             <button id="popupEliminar2">Eliminar</button>
         </div>
-    `;
+   `;
+
 
     overlay.setPosition(coord);
     popup.style.display = "block";
 
     setTimeout(() => {
-
+        // BOTÓN EDITAR
         document.getElementById("popupEditar").onclick = () => {
             const nuevo = prompt("Nuevo nombre:", nombre);
             if (nuevo === null) return;
@@ -330,6 +343,7 @@ map.on("singleclick", function(evt) {
                 });
         };
 
+        // BOTÓN ELIMINAR
         document.getElementById("popupEliminar2").onclick = () => {
             if (!confirm("¿Eliminar parada " + paradaId + "?")) return;
 
@@ -338,12 +352,105 @@ map.on("singleclick", function(evt) {
                 popup.style.display = "none";
                 sourceParadas.refresh();
             }).catch(err => {
-                console.error("Error eliminando desde popup:", err);
+                console.error("Error eliminando desde popup:", err);    
                 alert("Error eliminando parada");
             });
         };
 
+        // 🔹 NUEVO: CONTENEDOR PARA MOSTRAR LÍNEAS
+        const divLineas = document.createElement("div");
+        divLineas.id = "popupLineas";
+        divLineas.style.marginTop = "8px";
+        divLineas.innerHTML = "<em>Cargando líneas asociadas...</em>";
+        popupContent.appendChild(divLineas);
+    
+        // 🔹 NUEVO: Fetch a /api/paradaLineas
+        fetch(`http://localhost:8080/transporte-1.0/api/paradaLineas?paradaId=${paradaId}`)
+            .then(r => r.json())
+            .then(data => {
+                console.log("paradaLineas:", data);
+    
+                if (!data.success) {
+                    divLineas.innerHTML = `<span style="color:red;">Error: ${data.error || "No se pudieron cargar las líneas"}</span>`;
+                    return;
+                }
+
+                const lineas = data.lineas || [];
+
+                if (lineas.length === 0) {
+                    divLineas.innerHTML = `<em>No hay líneas asociadas a esta parada.</em>`;
+                    return;
+                }
+
+                let html = "<u>Líneas que pasan por aquí:</u><br>";
+                lineas.forEach(l => {
+                const horarios = (l.horarios || []).join(", ");
+                const estado = l.habilitada ? "habilitada" : "deshabilitada";
+
+                html += `
+    • ${l.codigo} <small>(${estado})</small>
+      <button class="btnVerLinea" data-linea="${l.linea_id}" style="margin-left:5px; font-size:10px;">
+        Ver en mapa
+      </button>
+`               ;
+
+                if (horarios) {
+                    html += `<br>&nbsp;&nbsp;Horarios: ${horarios}`;
+                }
+                html += "<br>";
+            });
+
+            divLineas.innerHTML = html;
+    // Delegar click: ver geometría de línea
+    document.querySelectorAll(".btnVerLinea").forEach(btn => {
+        btn.onclick = () => {
+            const idLinea = btn.dataset.linea;
+
+            fetch(`http://localhost:8080/transporte-1.0/api/lineaGeom?idLinea=${idLinea}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert("Error: " + data.error);
+                        return;
+                    }
+
+                    const geom = data.geom;
+                    if (!geom || !geom.coordinates) {
+                        alert("Geom inválida");
+                        return;
+                    }
+
+                    let coords = geom.coordinates;
+
+                    // MultiLineString → quedarse solo con primer tramo
+                    if (Array.isArray(coords[0][0])) {
+                        console.log("MultiLineString detectado");
+                        coords = coords[0];
+                    }
+
+                    rutaActualLonLat = coords.map(c => [c[0], c[1]]);
+    
+                    // Limpiar capa de ruta actual y dibujar
+                    sourceRuta.clear();
+                    dibujarRuta(rutaActualLonLat);
+    
+                    alert("Línea dibujada en el mapa.");
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error cargando la geometría de la línea");
+                });
+            };
+        });
+
+        })
+        .catch(err => {
+            console.error("Error cargando líneas de parada:", err);
+            divLineas.innerHTML = `<span style="color:red;">Error cargando líneas.</span>`;
+        });
+
     }, 10);
+
 });
 
 
@@ -422,6 +529,7 @@ function crearRuta() {
     alert("Seleccioná primero la parada de inicio y luego la de fin.");
     return;
   }
+  sourceRuta.clear();
 
   const idInicio = getFeatureId(paradaInicio);
   const idFin = getFeatureId(paradaFin);
@@ -518,7 +626,7 @@ function dibujarRuta(coordinates) {
         console.error("[dibujarRuta] EXTENT VACÍO — las coordenadas transformadas coinciden.");
         return;
     }
-
+    sourceRuta.clear(true);
     const feature = new ol.Feature({ geometry: lineString });
     sourceRuta.addFeature(feature);
 
@@ -529,6 +637,83 @@ function dibujarRuta(coordinates) {
 
     console.log("[dibujarRuta] Ruta dibujada correctamente.");
 }
+
+document.getElementById("btnGuardarLinea").addEventListener("click", guardarLinea);
+
+function guardarLinea() {
+  if (!sourceRuta.getFeatures().length) {
+    alert("No hay ruta para guardar.");
+    return;
+  }
+
+  const feature = sourceRuta.getFeatures()[0];
+  const geom    = feature.getGeometry();
+
+  if (!(geom instanceof ol.geom.LineString)) {
+    alert("La geometría de la ruta no es una LineString.");
+    return;
+  }
+
+  const coords3857  = geom.getCoordinates();
+  const coordsLonLat = coords3857.map(c => ol.proj.toLonLat(c));
+
+  const geomJson = {
+    type: "LineString",
+    coordinates: coordsLonLat
+  };
+
+  const codigo  = prompt("Código de la línea:");
+  if (!codigo) {
+    alert("Debe indicar un código de línea.");
+    return;
+  }
+
+  const origen  = prompt("Origen de la línea:");
+  if (!origen) {
+    alert("Debe indicar un origen.");
+    return;
+  }
+
+  const destino = prompt("Destino de la línea:");
+  if (!destino) {
+    alert("Debe indicar un destino.");
+    return;
+  }
+
+  const empresa = prompt("Empresa (tal como figura en la tabla empresas, ej: CUTCSA):");
+  if (!empresa) {
+    alert("Debe indicar una empresa.");
+    return;
+  }
+
+  const formData = new URLSearchParams();
+  formData.append("codigo",  codigo.trim());
+  formData.append("origen",  origen.trim());
+  formData.append("destino", destino.trim());
+  formData.append("empresa", empresa.trim());  // 👈 ahora desde el prompt
+  formData.append("geom",    JSON.stringify(geomJson));
+
+  fetch("/transporte-1.0/api/registrarLinea", {
+    method: "POST",
+    body: formData
+  })
+    .then(r => r.json())
+    .then(res => {
+      console.log(res);
+      if (res.success) {
+        alert("Línea registrada con ID: " + res.linea_id);
+      } else {
+        alert("Error: " + res.error);
+      }
+    })
+    .catch(err => {
+      console.error("Error registrando línea:", err);
+      alert("Error registrando línea");
+    });
+}
+
+
+
 
 function recalcularRutaConVia(viaLon, viaLat) {
   if (rutaIdInicio == null || rutaIdFin == null) {
@@ -551,17 +736,54 @@ function recalcularRutaConVia(viaLon, viaLat) {
         return;
       }
 
-      // Aplanar el MultiLineString → array de [lon,lat]
-      const coords = data.coordinates.flat();
+      let coords;
+      if (Array.isArray(data.coordinates[0][0])) {
+        console.log("[recalcularRutaConVia] MultiLineString detectado, usando sólo el primer tramo.");
+        coords = data.coordinates[0];
+      } else {
+        coords = data.coordinates;
+      }
+
       rutaActualLonLat = coords.map(c => [c[0], c[1]]);
 
-      // Redibujar la ruta con la nueva geometría "pegada" a las calles
       dibujarRuta(rutaActualLonLat);
       alert("Ruta recalculada con el nuevo punto intermedio.");
     })
     .catch(err => {
       console.error(err);
       alert("Error recalculando la ruta.");
+    });
+}
+
+function buscarLineasPorEmpresa(nombreEmpresa) {
+  const url = `http://localhost:8080/transporte-1.0/api/lineasEmpresa?empresa=${encodeURIComponent(nombreEmpresa)}`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      console.log("lineasEmpresa:", data);
+
+      if (!data.success) {
+        alert("Error: " + (data.error || "No se pudieron obtener las líneas"));
+        return;
+      }
+
+      const lineas = data.lineas || [];
+      if (!lineas.length) {
+        alert(`La empresa ${nombreEmpresa} no tiene líneas registradas.`);
+        return;
+      }
+
+      let msg = `Líneas de ${nombreEmpresa}:\n\n`;
+      lineas.forEach(l => {
+        msg += `• ${l.codigo} — ${l.origen} → ${l.destino}\n`;
+      });
+
+      alert(msg);
+    })
+    .catch(err => {
+      console.error("Error buscando líneas por empresa:", err);
+      alert("Error buscando líneas por empresa.");
     });
 }
 

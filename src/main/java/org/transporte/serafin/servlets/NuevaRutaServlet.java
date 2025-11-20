@@ -24,8 +24,19 @@ public class NuevaRutaServlet extends HttpServlet {
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/transporte";
     private static final String DB_USER = "admin";
     private static final String DB_PASS = "admin";
-    
-    
+
+
+    // 2) BLOQUE STATIC PARA CARGAR EL DRIVER JDBC
+
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+            System.out.println(">>> Driver PostgreSQL cargado en NuevaRutaServlet");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)

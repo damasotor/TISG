@@ -5,6 +5,339 @@
 
 
 
+--- Archivo: ./src/main/java/org/transporte/serafin/servlets/ParadaLineasServlet.java ---
+
+
+package org.transporte.serafin.servlets;
+
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.stream.Collectors;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+@WebServlet("/api/paradaLineas")
+public class ParadaLineasServlet extends HttpServlet {
+
+    private static final String DB_URL  = "jdbc:postgresql://localhost:5432/transporte";
+    private static final String DB_USER = "admin";   // usa las mismas credenciales que en los otros servlets que FUNCIONAN
+    private static final String DB_PASS = "admin";
+
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+            System.out.println(">>> Driver PostgreSQL cargado en ParadaLineasServlet");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+
+        JSONObject json = new JSONObject();
+
+        String paradaIdStr = req.getParameter("paradaId");
+        if (paradaIdStr == null) {
+            json.put("success", false);
+            json.put("error", "Falta parámetro paradaId");
+            resp.getWriter().write(json.toString());
+            return;
+        }
+
+        int paradaId;
+        try {
+            paradaId = Integer.parseInt(paradaIdStr);
+        } catch (NumberFormatException e) {
+            json.put("success", false);
+            json.put("error", "paradaId debe ser entero");
+            resp.getWriter().write(json.toString());
+            return;
+        }
+
+        String sql =
+            "SELECT pl.linea_id, l.codigo, pl.horarios, pl.habilitada " +
+            "FROM parada_linea pl " +
+            "JOIN lineas l ON l.id = pl.linea_id " +
+            "WHERE pl.parada_id = ? " +
+            "ORDER BY l.codigo";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, paradaId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                JSONArray arr = new JSONArray();
+
+                while (rs.next()) {
+                    JSONObject o = new JSONObject();
+                    o.put("linea_id", rs.getInt("linea_id"));
+                    o.put("codigo", rs.getString("codigo"));
+
+                    String horariosStr = rs.getString("horarios");
+                    if (horariosStr == null || horariosStr.isBlank()) {
+                        o.put("horarios", new JSONArray());
+                    } else {
+                        try {
+                            o.put("horarios", new JSONArray(horariosStr));
+                        } catch (Exception ex) {
+                            // Por si el texto no es JSON válido
+                            JSONArray ha = new JSONArray();
+                            ha.put(horariosStr);
+                            o.put("horarios", ha);
+                        }
+                    }
+
+                    o.put("habilitada", rs.getBoolean("habilitada"));
+
+                    arr.put(o);
+                }
+
+                json.put("success", true);
+                json.put("paradaId", paradaId);
+                json.put("lineas", arr);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            json.put("success", false);
+            json.put("error", e.getMessage());
+        }
+
+        resp.getWriter().write(json.toString());
+    }
+}
+
+
+
+--- Archivo: ./src/main/java/org/transporte/serafin/servlets/RegistrarLineaServlet.java ---
+
+
+package org.transporte.serafin.servlets;
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+import java.io.*;
+import java.sql.*;
+import org.json.JSONObject;
+
+@WebServlet("/api/registrarLinea")
+public class RegistrarLineaServlet extends HttpServlet {
+
+    private static final String DB_URL  = "jdbc:postgresql://localhost:5432/transporte";
+    private static final String DB_USER = "admin";
+    private static final String DB_PASS = "admin";
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+        resp.setContentType("application/json; charset=UTF-8");
+        JSONObject json = new JSONObject();
+
+        try {
+            String codigo   = req.getParameter("codigo");
+            String origen   = req.getParameter("origen");
+            String destino  = req.getParameter("destino");
+            String empresa  = req.getParameter("empresa");
+            String geomJson = req.getParameter("geom");
+
+            if (codigo == null || origen == null || destino == null || empresa == null || geomJson == null) {
+                json.put("success", false);
+                json.put("error", "Faltan parámetros");
+                resp.getWriter().write(json.toString());
+                return;
+            }
+
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+
+                String sql = "SELECT registrar_linea(?, ?, ?, ?, ?::json) AS resultado";
+
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, codigo);
+                    ps.setString(2, origen);
+                    ps.setString(3, destino);
+                    ps.setString(4, empresa);
+                    ps.setString(5, geomJson);
+
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            JSONObject resultado = new JSONObject(rs.getString("resultado"));
+                            resp.getWriter().write(resultado.toString());
+                            return;
+                        }
+                    }
+                }
+            }
+
+            json.put("success", false);
+            json.put("error", "No se obtuvo respuesta");
+            resp.getWriter().write(json.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            json.put("success", false);
+            json.put("error", e.getMessage());
+            resp.getWriter().write(json.toString());
+        }
+    }
+}
+
+
+
+--- Archivo: ./src/main/java/org/transporte/serafin/servlets/NuevaRutaConViaServlet.java ---
+
+
+package org.transporte.serafin.servlets;
+
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+@WebServlet("/api/nuevaRutaConVia")
+public class NuevaRutaConViaServlet extends HttpServlet {
+
+    // Usamos la misma config que en NuevaRutaServlet
+    private static final String DB_URL  = "jdbc:postgresql://localhost:5432/transporte";
+    private static final String DB_USER = "admin";
+    private static final String DB_PASS = "admin";
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        // --- INICIO DE CÓDIGO CORS (igual que en NuevaRutaServlet) ---
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+        // --- FIN DE CÓDIGO CORS ---
+
+        resp.setContentType("application/json;charset=UTF-8");
+        JSONObject json = new JSONObject();
+
+        // Leer parámetros
+        String idInicioStr = req.getParameter("idInicio");
+        String idFinStr    = req.getParameter("idFin");
+        String viaLonStr   = req.getParameter("viaLon");
+        String viaLatStr   = req.getParameter("viaLat");
+
+        if (idInicioStr == null || idFinStr == null || viaLonStr == null || viaLatStr == null) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            json.put("success", false);
+            json.put("error", "Faltan parámetros idInicio, idFin, viaLon o viaLat");
+            resp.getWriter().write(json.toString());
+            return;
+        }
+
+        int idInicio, idFin;
+        double viaLon, viaLat;
+
+        try {
+            idInicio = Integer.parseInt(idInicioStr);
+            idFin    = Integer.parseInt(idFinStr);
+            viaLon   = Double.parseDouble(viaLonStr);
+            viaLat   = Double.parseDouble(viaLatStr);
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            json.put("success", false);
+            json.put("error", "Parámetros numéricos inválidos");
+            resp.getWriter().write(json.toString());
+            return;
+        }
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+
+            String sql = "SELECT registrar_ruta_con_via(?, ?, ?, ?) AS resultado";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, idInicio);
+                ps.setDouble(2, viaLon);
+                ps.setDouble(3, viaLat);
+                ps.setInt(4, idFin);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String resultado = rs.getString("resultado");
+                        System.out.println(">>> registrar_ruta_con_via devolvió: " + resultado);
+
+                        if (resultado == null || resultado.trim().isEmpty()) {
+                            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                            json.put("success", false);
+                            json.put("error", "La función registrar_ruta_con_via devolvió NULL o vacío");
+                        } else {
+                            try {
+                                JSONObject obj = new JSONObject(resultado);
+                                boolean success = obj.optBoolean("success", false);
+                                json.put("success", success);
+
+                                if (success) {
+                                    String geomStr = obj.optString("geom", "{}");
+                                    try {
+                                        JSONObject geom = new JSONObject(geomStr);
+                                        json.put("coordinates", geom.optJSONArray("coordinates"));
+                                    } catch (JSONException ge) {
+                                        System.err.println("Error al parsear geom JSON: " + geomStr);
+                                        json.put("coordinates", new JSONArray());
+                                    }
+                                } else {
+                                    json.put("error", obj.optString("message", "Error desconocido"));
+                                }
+
+                            } catch (JSONException je) {
+                                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                                json.put("success", false);
+                                json.put("error", "JSON inválido devuelto por registrar_ruta_con_via: " + resultado);
+                                je.printStackTrace();
+                            }
+                        }
+
+                    } else {
+                        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        json.put("success", false);
+                        json.put("error", "Sin resultados de la función registrar_ruta_con_via");
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            json.put("success", false);
+            json.put("error", "Error de base de datos: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        resp.getWriter().write(json.toString());
+    }
+}
+
+
+
 --- Archivo: ./src/main/java/org/transporte/serafin/servlets/NuevaRutaServlet.java ---
 
 
@@ -32,10 +365,21 @@ import org.json.JSONException;
 public class NuevaRutaServlet extends HttpServlet {
 
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/transporte";
-    private static final String DB_USER = "postgres";
+    private static final String DB_USER = "admin";
     private static final String DB_PASS = "admin";
-    
-    
+
+
+    // 2) BLOQUE STATIC PARA CARGAR EL DRIVER JDBC
+
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+            System.out.println(">>> Driver PostgreSQL cargado en NuevaRutaServlet");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -426,6 +770,23 @@ const layerRuta = new ol.layer.Vector({
 });
 map.addLayer(layerRuta);
 
+// INTERACCIONES PARA RUTAS (editar geometría de la línea)
+const selectRuta = new ol.interaction.Select({
+  layers: [layerRuta],
+  hitTolerance: 6
+});
+
+const modifyRuta = new ol.interaction.Modify({
+  features: selectRuta.getFeatures()
+});
+
+// Al principio desactivadas: se activan sólo cuando el usuario toca el botón "Modificar ruta"
+selectRuta.setActive(false);
+modifyRuta.setActive(false);
+
+map.addInteraction(selectRuta);
+map.addInteraction(modifyRuta);
+
 
 // INTERACCIONES
 const select = new ol.interaction.Select({ layers: [vectorLayerParadas], hitTolerance: 6 });
@@ -441,6 +802,12 @@ let modoEliminar = false;
 let modoModificar = false;
 let paradaInicio = null;
 let paradaFin = null;
+let modoModificarRuta = false; 
+
+// ESTADO DE RUTA ACTUAL
+let rutaActualLonLat = null;  // array de [lon, lat] de la ruta actual
+let rutaIdInicio = null;
+let rutaIdFin = null;
 
 // POPUP
 const popup = document.getElementById("popup");
@@ -470,6 +837,28 @@ document.getElementById("btnRefrescar").onclick = () => {
   sourceParadas.clear();
   sourceParadas.refresh();
 };
+
+// Botón para MODIFICAR RUTA (mover nodos de la línea ya calculada)
+const btnModificarRuta = document.getElementById("btnModificarRuta");
+if (btnModificarRuta) {
+  btnModificarRuta.onclick = () => {
+    if (!rutaActualLonLat || !rutaActualLonLat.length) {
+      alert("No hay ninguna ruta dibujada para modificar.");
+      return;
+    }
+
+    modoModificarRuta = !modoModificarRuta;
+    selectRuta.setActive(modoModificarRuta);
+    modifyRuta.setActive(modoModificarRuta);
+
+    alert(
+      modoModificarRuta
+        ? "Modo MODIFICAR RUTA activado: hacé clic en la línea y arrastrá un vértice."
+        : "Modo MODIFICAR RUTA desactivado."
+    );
+  };
+}
+
 
 // HELPERS
 function getFeatureId(f) {
@@ -607,17 +996,23 @@ map.on("singleclick", function(evt) {
     popupContent.innerHTML = `
         <div><strong>${nombre}</strong></div>
         <div>ID: ${paradaId}</div>
+
+        <div id="popupLineas" style="margin-top:8px; font-size:12px; color:#333;">
+            <em>Cargando líneas asociadas...</em>
+        </div>
+
         <div style="margin-top:8px;">
             <button id="popupEditar">Editar</button>
             <button id="popupEliminar2">Eliminar</button>
         </div>
-    `;
+   `;
+
 
     overlay.setPosition(coord);
     popup.style.display = "block";
 
     setTimeout(() => {
-
+        // BOTÓN EDITAR
         document.getElementById("popupEditar").onclick = () => {
             const nuevo = prompt("Nuevo nombre:", nombre);
             if (nuevo === null) return;
@@ -634,6 +1029,7 @@ map.on("singleclick", function(evt) {
                 });
         };
 
+        // BOTÓN ELIMINAR
         document.getElementById("popupEliminar2").onclick = () => {
             if (!confirm("¿Eliminar parada " + paradaId + "?")) return;
 
@@ -642,12 +1038,57 @@ map.on("singleclick", function(evt) {
                 popup.style.display = "none";
                 sourceParadas.refresh();
             }).catch(err => {
-                console.error("Error eliminando desde popup:", err);
+                console.error("Error eliminando desde popup:", err);    
                 alert("Error eliminando parada");
             });
         };
 
+        // 🔹 NUEVO: CONTENEDOR PARA MOSTRAR LÍNEAS
+        const divLineas = document.createElement("div");
+        divLineas.id = "popupLineas";
+        divLineas.style.marginTop = "8px";
+        divLineas.innerHTML = "<em>Cargando líneas asociadas...</em>";
+        popupContent.appendChild(divLineas);
+    
+        // 🔹 NUEVO: Fetch a /api/paradaLineas
+        fetch(`http://localhost:8080/transporte-1.0/api/paradaLineas?paradaId=${paradaId}`)
+            .then(r => r.json())
+            .then(data => {
+                console.log("paradaLineas:", data);
+    
+                if (!data.success) {
+                    divLineas.innerHTML = `<span style="color:red;">Error: ${data.error || "No se pudieron cargar las líneas"}</span>`;
+                    return;
+                }
+
+                const lineas = data.lineas || [];
+
+                if (lineas.length === 0) {
+                    divLineas.innerHTML = `<em>No hay líneas asociadas a esta parada.</em>`;
+                    return;
+                }
+
+                let html = "<u>Líneas que pasan por aquí:</u><br>";
+                lineas.forEach(l => {
+                const horarios = (l.horarios || []).join(", ");
+                const estado = l.habilitada ? "habilitada" : "deshabilitada";
+
+                html += `• ${l.codigo} <small>(${estado})</small>`;
+                if (horarios) {
+                    html += `<br>&nbsp;&nbsp;Horarios: ${horarios}`;
+                }
+                html += "<br>";
+            });
+
+            divLineas.innerHTML = html;
+        })
+        .catch(err => {
+            console.error("Error cargando líneas de parada:", err);
+            divLineas.innerHTML = `<span style="color:red;">Error cargando líneas.</span>`;
+        });
+
     }, 10);
+
 });
 
 
@@ -668,6 +1109,59 @@ modify.on("modifyend", manejarEdicion);
 
 // CARGA INICIAL
 sourceParadas.refresh();
+// Cuando se termina de modificar la geometría de la RUTA
+modifyRuta.on("modifyend", (evt) => {
+  const features = evt.features.getArray();
+  if (!features.length) return;
+
+  const geom = features[0].getGeometry();
+  if (!(geom instanceof ol.geom.LineString)) {
+    console.warn("[modifyRuta] La geometría no es una LineString.");
+    return;
+  }
+
+  // Coord en proyección del mapa → pasamos a lon/lat
+  const coords3857 = geom.getCoordinates();
+  const coordsLonLat = coords3857.map(c => ol.proj.toLonLat(c));
+
+  if (!rutaActualLonLat || rutaActualLonLat.length !== coordsLonLat.length) {
+    // Algo raro: cambió la cantidad de vértices
+    rutaActualLonLat = coordsLonLat;
+    console.warn("[modifyRuta] Cambio de cantidad de vértices, se actualiza copia local pero no se recalcula.");
+    return;
+  }
+
+  // Detectar qué vértice se movió
+  const EPS = 1e-5;
+  let movedIndex = -1;
+
+  for (let i = 0; i < coordsLonLat.length; i++) {
+    const [lon0, lat0] = rutaActualLonLat[i];
+    const [lon1, lat1] = coordsLonLat[i];
+    const d = Math.hypot(lon1 - lon0, lat1 - lat0);
+    if (d > EPS) {
+      movedIndex = i;
+      break;
+    }
+  }
+
+  if (movedIndex === -1) {
+    console.log("[modifyRuta] No se detectó vértice movido.");
+    return;
+  }
+
+  const [viaLon, viaLat] = coordsLonLat[movedIndex];
+  console.log("[modifyRuta] Vértice movido en índice", movedIndex, "a", viaLon, viaLat);
+
+  // Actualizamos la copia local
+  rutaActualLonLat = coordsLonLat;
+
+  // Pedir recálculo al backend usando este punto como "via"
+  recalcularRutaConVia(viaLon, viaLat);
+});
+
+
+
 function crearRuta() {
   if (!paradaInicio || !paradaFin) {
     alert("Seleccioná primero la parada de inicio y luego la de fin.");
@@ -689,11 +1183,20 @@ function crearRuta() {
         return;
       }
 
-      dibujarRuta( data.coordinates.flat() );
+      // Guardar estado de la ruta actual
+      rutaIdInicio = idInicio;
+      rutaIdFin = idFin;
+
+      // Aplanar el MultiLineString → array de [lon,lat]
+      const coords = data.coordinates.flat();
+      rutaActualLonLat = coords.map(c => [c[0], c[1]]);
+
+      // Dibujar
+      dibujarRuta(rutaActualLonLat);
 
       alert("Ruta creada exitosamente");
 
-      // reset
+      // Reset de selección de paradas (pero NO de rutaIdInicio/Fin)
       paradaInicio = null;
       paradaFin = null;
     })
@@ -702,6 +1205,7 @@ function crearRuta() {
       alert("Error creando ruta.");
     });
 }
+
 
 /**
  * Dibuja la ruta en el mapa.
@@ -771,6 +1275,74 @@ function dibujarRuta(coordinates) {
     console.log("[dibujarRuta] Ruta dibujada correctamente.");
 }
 
+document.getElementById("btnGuardarLinea").addEventListener("click", guardarLinea);
+
+function guardarLinea() {
+    if (!rutaActualLonLat) {
+        alert("No hay ruta para guardar.");
+        return;
+    }
+
+    const geom = {
+        type: "LineString",
+        coordinates: rutaActualLonLat
+    };
+
+    const formData = new URLSearchParams();
+    formData.append("codigo", prompt("Código de la línea"));
+    formData.append("origen", prompt("Origen"));
+    formData.append("destino", prompt("Destino"));
+    formData.append("empresa", "CUTCSA");
+    formData.append("geom", JSON.stringify(geom));
+
+    fetch("/transporte-1.0/api/registrarLinea", {
+        method: "POST",
+        body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+        console.log(res);
+        if (res.success) alert("Línea registrada con ID: " + res.linea_id);
+        else alert("Error: " + res.error);
+    });
+}
+
+
+
+function recalcularRutaConVia(viaLon, viaLat) {
+  if (rutaIdInicio == null || rutaIdFin == null) {
+    console.warn("[recalcularRutaConVia] No hay id de inicio/fin guardados.");
+    return;
+  }
+
+  const url =
+    `http://localhost:8080/transporte-1.0/api/nuevaRutaConVia` +
+    `?idInicio=${rutaIdInicio}&idFin=${rutaIdFin}` +
+    `&viaLon=${viaLon}&viaLat=${viaLat}`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      console.log("Ruta recalculada:", data);
+
+      if (!data || !data.coordinates) {
+        alert("El servidor no devolvió una ruta válida al recalcular.");
+        return;
+      }
+
+      // Aplanar el MultiLineString → array de [lon,lat]
+      const coords = data.coordinates.flat();
+      rutaActualLonLat = coords.map(c => [c[0], c[1]]);
+
+      // Redibujar la ruta con la nueva geometría "pegada" a las calles
+      dibujarRuta(rutaActualLonLat);
+      alert("Ruta recalculada con el nuevo punto intermedio.");
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error recalculando la ruta.");
+    });
+}
 
 
 
@@ -814,8 +1386,11 @@ function dibujarRuta(coordinates) {
 <button type="button" id="btnCrearParada">Crear parada</button>
 <button type="button" id="btnModoEliminar">Eliminar</button>
 <button type="button" id="btnModoModificar">Modificar</button>
+<button id="btnGuardarLinea">Guardar línea</button>
 <button type="button" id="btnRefrescar">Refrescar</button>
 <button type="button" onclick="crearRuta()" id="btnCrearRuta">Crear Ruta</button>
+<button type="button" id="btnModificarRuta">Modificar ruta</button>
+
 
 </div>
 

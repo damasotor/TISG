@@ -23,7 +23,7 @@ public class NuevaRutaConViaServlet extends HttpServlet {
 
     // Usamos la misma config que en NuevaRutaServlet
     private static final String DB_URL  = "jdbc:postgresql://localhost:5432/transporte";
-    private static final String DB_USER = "postgres";
+    private static final String DB_USER = "admin";
     private static final String DB_PASS = "admin";
 
     @Override
